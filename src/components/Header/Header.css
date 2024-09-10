@@ -1,0 +1,59 @@
+
+.header {
+    position: relative;
+    width: 100%;
+    height: 8vw;
+    left: 0px;
+    top: 0px;
+    background: linear-gradient(90deg, rgba(50, 147, 111, 0.33) 0%, rgba(50, 136, 128, 0.595451) 48.26%, rgba(50, 131, 138, 0.738299) 74.24%, rgba(41, 118, 141, 0.88) 100%);
+    box-shadow: 0px 4px 15px 1px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 35px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+.header * {
+    box-sizing: border-box;
+}
+
+.header > .logo-container{
+    width: 30%;
+
+}
+.header > .logo-container > a{
+    height: 5rem;
+    display: flex;
+}
+.header nav{
+    width: 70%;
+}
+.header nav ul{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    list-style-type: none;
+    width: 100%;
+    gap: 5rem;
+}
+.header nav ul > li, .header nav ul > li > a{
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 800;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.login-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 15.625rem;
+    height: 3.75rem;
+    background: #FF6496;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+}
