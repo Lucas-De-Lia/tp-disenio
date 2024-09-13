@@ -7,7 +7,7 @@ export const Header = () => {
     <>
         <AppBar>
             <Toolbar sx={{maxHeight:100,display:'flex',justifyContent:'space-between',alignItems:'center' ,background:'linear-gradient(90deg, #32936F 30% , #328880 60%,#32838A 74%,#29768D 88%)'}}>
-                <UtnIcon style = {{Height:250,Width: 250}}/>
+                <Link to="/"><UtnIcon style = {{Height:250,Width: 250}}/></Link>
                 <Box sx={{display:'flex',gap:20}}>
                     <Link to="/faq"><Button sx={{color:'#FFF'}}>Preguntas Frecuentes</Button></Link>
                     <Link to="/about"><Button sx={{color:'#FFF'}}>Sobre nosotros</Button></Link>
