@@ -1,34 +1,5 @@
-/*
- * Reset default styles for the browser
-*/
-
-/* Set default styles for the body */
-body {
+*{
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-}
-
-/* Reset margins and paddings for headings */
-h1, h2, h3, h4, h5, h6 {
-    margin: 0;
-    padding: 0;
-}
-
-/* Reset margins and paddings for paragraphs */
-p {
-    margin: 0;
-    padding: 0;
-}
-
-/* Remove underline and set color for links */
-a {
-    text-decoration: none;
-    color: #333;
-}
-
-/* Set cursor style for buttons */
-button {
-    cursor: pointer;
+    box-sizing: border-box;
 }
