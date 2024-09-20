@@ -20,7 +20,7 @@ export const MainPage = () => {
           alt="Imagen de la página principal"
           sx={{
             width: 'auto',
-            height: '80vh',
+            height: '450px',
           }}
         />
     </Box>
