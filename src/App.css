@@ -1,6 +1,11 @@
 /*
  * Reset default styles for the browser
 */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 /* Set default styles for the body */
 body {

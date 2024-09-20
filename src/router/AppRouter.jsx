@@ -5,12 +5,13 @@ import { Header } from "../components/Header/Header"
 
 export const AppRouter = () => {
   return (
-    <div>
+    <>
       <Header/>
       <Routes>
         <Route path="/auth/*" element={<AuthRouter />} />
         <Route path="/*" element = {<GestionRouter/>}/>
       </Routes>
-    </div>
+    </>
+
   )
 }
