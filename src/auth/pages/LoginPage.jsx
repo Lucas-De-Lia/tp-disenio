@@ -10,7 +10,7 @@ export const LoginPage = () => {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      sx={{ minHeight: '100vh', background:'linear-gradient(180deg, #32936F 30% , #328880 60%,#32838A 74%,#29768D 88%)', padding: 4 }}
+      sx={{ minHeight: '100vh', padding: 4 }}
     >
 
       <Grid2 container
