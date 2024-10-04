@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom"
 import { Box } from '@mui/material';
 import { GestionRouter } from "../gestionAulas/routes/GestionRouter"
 import { AuthRouter } from "../auth/routes/AuthRouter"
+import { MainPage } from "../pages/MainPage";
+import { PrivateRoute } from "../auth/PrivateRoute"
 
 export const AppRouter = () => {
   return (
@@ -12,7 +14,10 @@ export const AppRouter = () => {
       >
         <Routes>
           <Route path="/auth/*" element={<AuthRouter />} />
-          <Route path="/*" element = {<GestionRouter/>}/>
+          <Route path="/" element={<MainPage />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/*" element = {<GestionRouter/>}/>
+          </Route>
         </Routes>
       </Box>
     </>

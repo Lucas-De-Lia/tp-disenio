@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom"
-import { AulasPage, MainPage, ReservasPage, MainMenuPage, ReservasPorFechaPage, ReservasPorCursoPage, BuscarBedelPage, RegistrarBedelPage, RegistrarReservaPage } from "../pages";
+import { AulasPage, ReservasPage, MainMenuPage, ReservasPorFechaPage, ReservasPorCursoPage, BuscarBedelPage, RegistrarBedelPage, RegistrarReservaPage } from "../pages";
 
 export const GestionRouter = () => {
   return (
@@ -12,7 +12,6 @@ export const GestionRouter = () => {
       <Route path="registrar-bedel" element={<RegistrarBedelPage />} />
       <Route path="registrar-reserva" element={<RegistrarReservaPage />} />
       <Route path="dashboard" element={<MainMenuPage />} />
-      <Route path="/" element={<MainPage />} />
       <Route path="/*" element={<Navigate to="/" />} />
     </Routes>
   )

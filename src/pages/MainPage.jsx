@@ -1,11 +1,11 @@
 import { Box } from '@mui/material';
-import MainPageImage from '../../assets/img/MainPageImage.png';
-import { Header } from '../../components/Header/Header';
+import MainPageImage from "../assets/img/MainPageImage.png";
+import { Header } from "../components/Header/Header";
 
 
 export const MainPage = () => {
   return (
-  <>
+    <>
     <Header/>
     <Box
       sx={{

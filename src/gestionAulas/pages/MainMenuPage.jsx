@@ -5,14 +5,16 @@ import { MainMenuButton } from '../components/MainMenuButton';
 import MainMenuButtonImage1 from './assets/MainMenuButtonImage1.png';
 import MainMenuButtonImage2 from './assets/MainMenuButtonImage2.png';
 import MainMenuButtonImage3 from './assets/MainMenuButtonImage3.png';
+import { Header } from "../../components/Header/Header";
+import { useAuth } from '../../auth/AuthProvider';
+import { UserTypes } from '../../constants/userTypes';
 
 export const MainMenuPage = () => {
-    {/* Solo hasta que esté implementado lo de la autenticación  */}
-    const queryParams = new URLSearchParams(window.location.search);
-    const isAdmin = queryParams.get('adminprueba') === 'true';
-    const toggleAdminLink = isAdmin ? '/dashboard?adminprueba=false' : '/dashboard?adminprueba=true';
+    const auth = useAuth();
     
     return (
+        <>
+        <Header/>
         <Box
             sx={{
                 minHeight: '100vh',
@@ -22,7 +24,7 @@ export const MainMenuPage = () => {
                 alignItems: 'center',
                 gap: '50px',
             }}
-        >
+            >
             {/* Frase */}
             <CardMedia
                 component="img"
@@ -32,7 +34,7 @@ export const MainMenuPage = () => {
                     height: '200px',
                     width: 'auto',
                 }}
-            />
+                />
                 
             {/* Botones */}
             <Box sx={{
@@ -42,7 +44,7 @@ export const MainMenuPage = () => {
             }}>
                 <MainMenuButton link="/reservas-por-fecha" image={MainMenuButtonImage1} text="Reservas por Fecha" alt="Reservas por Fecha"/>
                 <MainMenuButton link="/reservas-por-curso" image={MainMenuButtonImage1} text="Reservas por Curso" alt="Reservas por Curso"/>
-                {isAdmin && (
+                {auth.user && auth.user.tipoUsuario ===  UserTypes.ADMIN && (
                     <>
                         <MainMenuButton link="/buscar-bedel" image={MainMenuButtonImage2} text="Buscar Bedel" alt="Buscar Bedel"/>
                         <MainMenuButton link="/registrar-bedel" image={MainMenuButtonImage3} text="Registrar Bedel" alt="Registrar Bedel"/>
@@ -50,11 +52,7 @@ export const MainMenuPage = () => {
                 )}
                 <MainMenuButton link="/registrar-reserva" image={MainMenuButtonImage3} text="Registrar Reserva" alt="Registrar Reserva"/>
             </Box>
-
-            {/* Solo hasta que esté implementado lo de la autenticación  */}
-            <Link href={toggleAdminLink} sx={{ textDecoration: 'none', color: 'blue', position: 'fixed', right: '5vw', bottom: '5vh'}}>
-                {isAdmin ? 'Switch to Bedel View' : 'Switch to Admin View'}
-            </Link>
         </Box>
+        </>
     );
 };
