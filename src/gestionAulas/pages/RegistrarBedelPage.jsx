@@ -1,34 +1,74 @@
-import React, { useState } from 'react';
+import { Box, TextField, Typography } from "@mui/material"
+import { Header } from "../../components"
 
 export const RegistrarBedelPage = () => {
-    const [nombre, setNombre] = useState('');
-    const [bedeles, setBedeles] = useState([]);
-
-    const handleNombreChange = (event) => {
-        setNombre(event.target.value);
-    };
-
-    const handleRegistrarBedel = () => {
-        const newBedel = { id: bedeles.length + 1, nombre };
-        setBedeles([...bedeles, newBedel]);
-        setNombre('');
-    };
-
-    return (
-        <div>
-            <h1>Registrar Bedel</h1>
-            <input 
-                type="text" 
-                value={nombre} 
-                onChange={handleNombreChange} 
-                placeholder="Ingrese el nombre del bedel"
-            />
-            <button onClick={handleRegistrarBedel}>Registrar</button>
-            <ul>
-                {bedeles.map((bedel) => (
-                    <li key={bedel.id}>{bedel.nombre}</li>
-                ))}
-            </ul>
-        </div>
-    );
-};
+  return (
+    <>
+        <Header/>
+        <Box
+            sx={{
+                background:'linear-gradient(180deg, #32936F 30% , #328880 60%,#32838A 74%,#29768D 88%)',
+                height:'85vh',
+                width:'100%',
+                mt:1,
+                display:'flex',
+                justifyContent:'center',
+                alignItems:'center'
+            }}
+        >
+            <Box
+                sx={{
+                    background:'white',
+                    width:'60%',
+                    height:'90%',
+                    borderRadius:2
+                }}
+            >
+                <Box>
+                    <Typography variant="h4" component="h4" textAlign="center" mt={6} mb={3}>
+                        Registrar Bedel
+                    </Typography>
+                    <Box
+                        sx={{
+                            display:'flex',
+                            justifyContent:'space-around',
+                            alignItems:'center'                
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display:'flex',
+                                flexDirection:'column',
+                                gap:'1px',
+                                width:'30%'
+                            }}
+                        >
+                            <Typography color="#5E6366" ml={1}>
+                                Nombre
+                            </Typography>
+                            <TextField
+                                label="Nombre"
+                            />
+                        </Box>
+                        <Box
+                            sx={{
+                                display:'flex',
+                                flexDirection:'column',
+                                gap:'1px',
+                                width:'30%'
+                            }}
+                        >
+                            <Typography color="#5E6366" ml={1}>
+                                Apellido
+                            </Typography>
+                            <TextField
+                                label="Apellido"
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+        </Box>
+    </>
+  )
+}
