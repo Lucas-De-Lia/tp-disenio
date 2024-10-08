@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Toolbar } from "@mui/material"
 import { Link } from "react-router-dom"
 import { UtnIcon } from "./UtnIcon"
-
+//opacity:'0.9' me gustaria agregar esto
 export const Header = () => {
   return (
     <>
