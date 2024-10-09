@@ -1,8 +1,8 @@
-import { Box, Button, IconButton, InputAdornment, MenuItem, Select, TextField, Typography } from "@mui/material"
-import { Header } from "../../components"
-import { LockOutlined, VisibilityOffOutlined, VisibilityOutlined } from "@mui/icons-material"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Box, Button, IconButton, InputAdornment, MenuItem, Modal, Select, TextField, Typography } from "@mui/material";
+import { Header } from "../../components";
+import { LockOutlined, VisibilityOffOutlined, VisibilityOutlined } from "@mui/icons-material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const RegistrarBedelPage = () => {
 
@@ -14,6 +14,7 @@ export const RegistrarBedelPage = () => {
     const [userId, setUserId] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+    const [modal, setModal] = useState(false);
 
     const handleShowPassword = () => {
         setShowPassword(!showPassword);
@@ -177,9 +178,75 @@ export const RegistrarBedelPage = () => {
                             color:"#32936F",
                             borderColor:"#32936F"
                         }}
+                        onClick = {() => {setModal(true)}}
                     >
                     Cancelar
                     </Button>
+                    <Modal
+                        open = {modal}
+                        onClose={() => setModal(false)}
+                    >
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                background:'white',
+                                width:'30%',
+                                height:'30%',
+                                borderRadius:2,
+                                display:'flex',
+                                flexDirection:'column',
+                                justifyContent:'center',
+                                alignItems:'center'
+                            }}
+                        >
+                            <Typography
+                                variant="h5"
+                                component="h5"
+                                mt={5}
+                            >
+                                ¿Está seguro que desea cancelar?
+                            </Typography>
+                            <Box
+                                display="flex"
+                                justifyContent="space-around"
+                                alignItems="center"
+                                mt={5}
+                            >
+                                <Box
+                                    display="flex"
+                                    alignItems="center"
+                                    gap={5}
+                                >
+                                    <Button 
+                                        variant="outlined"
+                                        size="medium"
+                                        sx = {{
+                                            width: '100px',
+                                            color:"#32936F",
+                                            borderColor:"#32936F"
+                                        }}
+                                        onClick = {() => {setModal(false)}}
+                                    >
+                                        No
+                                    </Button>
+                                    <Button 
+                                        variant="contained"
+                                        size="medium"
+                                        sx = {{
+                                            width: '100px',
+                                            backgroundColor:"#32936F"
+                                        }}
+                                        onClick={() => {navigate('/dashboard')}}    
+                                    >
+                                        Si
+                                    </Button>
+                                    </Box>
+                            </Box>
+                        </Box>
+                    </Modal>
                     <Button 
                         variant="contained"
                         size="medium"
