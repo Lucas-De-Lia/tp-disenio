@@ -3,7 +3,8 @@ import { Box } from '@mui/material';
 import { GestionRouter } from "../gestionAulas/routes/GestionRouter"
 import { AuthRouter } from "../auth/routes/AuthRouter"
 import { MainPage } from "../pages/MainPage";
-import { PrivateRoute } from "../auth/PrivateRoute"
+import { PrivateRoute } from "./PrivateRoute"
+import { PublicRoute } from "./PublicRoute";
 
 export const AppRouter = () => {
   return (
@@ -13,10 +14,18 @@ export const AppRouter = () => {
         }}
       >
         <Routes>
-          <Route path="/auth/*" element={<AuthRouter />} />
+          
+          <Route path="/auth/*" element={
+            <PublicRoute>
+              <AuthRouter />
+            </PublicRoute>
+          } />
           <Route path="/" element={<MainPage />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="/*" element = {<GestionRouter/>}/>
+          <Route path = '/*' element={
+            <PrivateRoute>
+              <GestionRouter/>
+            </PrivateRoute>}
+          >
           </Route>
         </Routes>
       </Box>

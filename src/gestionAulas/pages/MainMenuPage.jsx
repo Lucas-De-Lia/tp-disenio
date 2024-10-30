@@ -1,17 +1,18 @@
-import React from 'react';
-import { Box, CardMedia, Link } from '@mui/material';
+import { useContext } from 'react';
+import { Box, CardMedia} from '@mui/material';
 import MainMenuImage from './assets/MainMenuImage.png';
-import { MainMenuButton } from '../components/MainMenuButton';
+import { MainMenuButton } from '../components';
 import MainMenuButtonImage1 from './assets/MainMenuButtonImage1.png';
 import MainMenuButtonImage2 from './assets/MainMenuButtonImage2.png';
 import MainMenuButtonImage3 from './assets/MainMenuButtonImage3.png';
-import { Header } from "../../components/Header/Header";
-import { useAuth } from '../../auth/AuthProvider';
-import { UserTypes } from '../../constants/userTypes';
+import { Header } from "../../components";
+import { UserTypes } from '../../constants';
+import { AuthContext } from '../../context';
 
 export const MainMenuPage = () => {
-    const auth = useAuth();
-    
+
+    //modificar para que solo se muestren los botones de registrar bedel y buscar bedel si el usuario es admin y funcione con el contexto
+    const {userType} = useContext(AuthContext);
     return (
         <>
         <Header/>
@@ -44,7 +45,7 @@ export const MainMenuPage = () => {
             }}>
                 <MainMenuButton link="/reservas-por-fecha" image={MainMenuButtonImage1} text="Reservas por Fecha" alt="Reservas por Fecha"/>
                 <MainMenuButton link="/reservas-por-curso" image={MainMenuButtonImage1} text="Reservas por Curso" alt="Reservas por Curso"/>
-                {auth.user && auth.user.tipoUsuario ===  UserTypes.ADMIN && (
+                {userType ===  UserTypes.ADMIN && (
                     <>
                         <MainMenuButton link="/buscar-bedel" image={MainMenuButtonImage2} text="Buscar Bedel" alt="Buscar Bedel"/>
                         <MainMenuButton link="/registrar-bedel" image={MainMenuButtonImage3} text="Registrar Bedel" alt="Registrar Bedel"/>
