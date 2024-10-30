@@ -6,12 +6,10 @@ import { UserTypes} from '../constants';
 
 export const AuthProvider = ({ children }) => { 
     const init = () => {
-        localStorage.clear();
         const user = JSON.parse(localStorage.getItem('user'));
-
         return {
             logged:!!user,
-            user
+            ...user
         }
     }
     

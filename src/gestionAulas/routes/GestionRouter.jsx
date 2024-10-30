@@ -12,7 +12,7 @@ export const GestionRouter = () => {
       <Route path="registrar-bedel" element={<RegistrarBedelPage />} />
       <Route path="registrar-reserva" element={<RegistrarReservaPage />} />
       <Route path="dashboard" element={<MainMenuPage />} />
-      <Route path="/*" element={<Navigate to="/" />} />
+      <Route path="/*" element={<Navigate to="/dashboard" />} />
     </Routes>
   )
 }

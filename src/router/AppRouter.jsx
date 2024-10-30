@@ -5,8 +5,20 @@ import { AuthRouter } from "../auth/routes/AuthRouter"
 import { MainPage } from "../pages/MainPage";
 import { PrivateRoute } from "./PrivateRoute"
 import { PublicRoute } from "./PublicRoute";
+import { useEffect } from "react";
 
 export const AppRouter = () => {
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      localStorage.clear();
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, [])
+  
   return (
     <>
       <Box sx={{
@@ -14,13 +26,13 @@ export const AppRouter = () => {
         }}
       >
         <Routes>
-          
+        <Route path="/" element={<MainPage />} />
+        
           <Route path="/auth/*" element={
             <PublicRoute>
               <AuthRouter />
             </PublicRoute>
           } />
-          <Route path="/" element={<MainPage />} />
           <Route path = '/*' element={
             <PrivateRoute>
               <GestionRouter/>
