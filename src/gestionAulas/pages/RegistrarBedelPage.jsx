@@ -3,15 +3,21 @@ import { Header } from "../../components";
 import { LockOutlined, VisibilityOffOutlined, VisibilityOutlined } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "../../hooks/useForm";
 
 export const RegistrarBedelPage = () => {
 
     const navigate = useNavigate();
 
-    const [nombre, setNombre] = useState("");
-    const [apellido, setApellido] = useState("");
-    const [turno, setTurno] = useState("");
-    const [userId, setUserId] = useState("");
+    const { nombre, apellido, turno, contrasenia, confirmarContrasenia, userId, onInputChange } = useForm({
+        nombre:'',
+        apellido:'',
+        turno:'',
+        contrasenia:'',
+        confirmarContrasenia:'',
+        userId:''
+    });
+
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
     const [modal, setModal] = useState(false);
@@ -23,6 +29,20 @@ export const RegistrarBedelPage = () => {
     const handleShowPasswordConfirmation = () => {
         setShowPasswordConfirmation(!showPasswordConfirmation);
     }
+
+    const handleModal = (state) => {
+        setModal(state);
+    }
+
+    const handleExit = () => {
+        navigate('/dashboard');
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        //solicitud http
+    }
+
   return (
     <>
         <Header/>
@@ -49,7 +69,9 @@ export const RegistrarBedelPage = () => {
                     <Typography variant="h4" component="h4" textAlign="center" mt={6} mb={3}>
                         Registrar Bedel
                     </Typography>
-                    <form>
+                    <form
+                        onSubmit={handleSubmit}
+                    >
                         <Box
                             sx={{
                                 display:'flex',
@@ -69,15 +91,17 @@ export const RegistrarBedelPage = () => {
                                     Nombre
                                 </Typography>
                                 <TextField
+                                    name="nombre"
                                     value={nombre}
-                                    onChange={(e) => setNombre(e.target.value)}
+                                    onChange={onInputChange}
                                 />
                                 <Typography color="#5E6366" ml={1} mt={5}>
                                     Turno
                                 </Typography>
                                 <Select
+                                    name="turno"
                                     value={turno}
-                                    onChange={(e) => setTurno(e.target.value)}
+                                    onChange={onInputChange}
                                 >
                                     <MenuItem value = {'Turno Mañana'}>Turno Mañana</MenuItem>
                                     <MenuItem value = {'Turno Trade'}>Turno Tarde</MenuItem>
@@ -87,6 +111,9 @@ export const RegistrarBedelPage = () => {
                                     Contraseña
                                 </Typography>
                                 <TextField
+                                    name="contrasenia"
+                                    value={contrasenia}
+                                    onChange={onInputChange}
                                     type={showPassword ? 'text' : 'password'}
                                     slotProps={{
                                         input:{
@@ -123,21 +150,26 @@ export const RegistrarBedelPage = () => {
                                     Apellido
                                 </Typography>
                                 <TextField
+                                    name="apellido"
                                     value={apellido}
-                                    onChange={(e) => setApellido(e.target.value)}
+                                    onChange={onInputChange}
                                 />
                                 <Typography color="#5E6366" ml={1} mt={5}>
                                     Identificador de usuario
                                 </Typography>
                                 <TextField
+                                    name="userId"
                                     type="number"
                                     value={userId}
-                                    onChange={(e) => setUserId(e.target.value)}
+                                    onChange={onInputChange}
                                 />
                                 <Typography color="#5E6366" ml={1} mt={5}>
                                     Confirmar contraseña
                                 </Typography>
                                 <TextField
+                                    name="confirmarContrasenia"
+                                    value={confirmarContrasenia}
+                                    onChange={onInputChange}
                                     type={showPasswordConfirmation ? "text" : "password"}
                                     slotProps={{
                                         input:{
@@ -180,13 +212,13 @@ export const RegistrarBedelPage = () => {
                             color:"#32936F",
                             borderColor:"#32936F"
                         }}
-                        onClick = {() => {setModal(true)}}
+                        onClick = {() => handleModal(true)}
                     >
                     Cancelar
                     </Button>
                     <Modal
                         open = {modal}
-                        onClose={() => setModal(false)}
+                        onClose={() => handleModal(false)}
                     >
                         <Box
                             sx={{
@@ -230,7 +262,7 @@ export const RegistrarBedelPage = () => {
                                             color:"#32936F",
                                             borderColor:"#32936F"
                                         }}
-                                        onClick = {() => {setModal(false)}}
+                                        onClick = {() => handleModal(false)}
                                     >
                                         No
                                     </Button>
@@ -241,7 +273,7 @@ export const RegistrarBedelPage = () => {
                                             width: '100px',
                                             backgroundColor:"#32936F"
                                         }}
-                                        onClick={() => {navigate('/dashboard')}}    
+                                        onClick={handleExit}    
                                     >
                                         Si
                                     </Button>
@@ -250,6 +282,7 @@ export const RegistrarBedelPage = () => {
                         </Box>
                     </Modal>
                     <Button 
+                        type="submit"
                         variant="contained"
                         size="medium"
                         sx = {{
