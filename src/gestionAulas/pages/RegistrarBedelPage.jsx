@@ -37,12 +37,12 @@ export const RegistrarBedelPage = () => {
     onInputChange,
     onResetForm,
   } = useForm({
-    nombre: "",
-    apellido: "",
-    turno: "",
-    password: "",
-    repeatedPassword: "",
-    idUsuario: "",
+    nombre: undefined,
+    apellido: undefined,
+    turno: undefined,
+    password: undefined,
+    repeatedPassword: undefined,
+    idUsuario: undefined,
   });
 
   const [showPassword, setShowPassword] = useState(false);
