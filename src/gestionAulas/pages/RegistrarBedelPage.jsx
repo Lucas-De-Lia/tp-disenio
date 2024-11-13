@@ -7,8 +7,7 @@ import { useForm } from "../../hooks/useForm";
 import { SuccessModal } from "../modals/SuccessModal";
 import { ErrorModal } from "../modals/ErrorModal";
 import { CancelModal } from "../modals/CancelModal";
-import { handleSubmit } from "../helpers/handleSubmit";
-import { passwordAnalizer } from "../helpers/passwordAnalizer";
+import { handleSubmit , passwordAnalizer } from "../helpers";
 
 export const RegistrarBedelPage = () => {
   const navigate = useNavigate();
@@ -39,6 +38,7 @@ export const RegistrarBedelPage = () => {
   const [errorList, setErrorList] = useState(null);
   const [passwordError, setPasswordError] = useState("");
   const [repPasswordError, setRepPasswordError] = useState("");
+  const [disabled, setDisabled] = useState(false)
 
   const handleClose = () => {
     setSuccess(false);
@@ -72,18 +72,21 @@ export const RegistrarBedelPage = () => {
 
   useEffect(() => {
     setPasswordError(passwordAnalizer(password));
-    setRepPasswordError(passwordAnalizer(repeatedPassword));
-
-    if(password !== repeatedPassword && repeatedPassword.length > 0 && password.length > 0){
-      setPasswordError("Las contraseñas no coinciden");
+    if(password !== repeatedPassword && !!repeatedPassword){
       setRepPasswordError("Las contraseñas no coinciden");
+    }else{
+      setRepPasswordError("");
     }
   }, [password, repeatedPassword])
   
 
   return (
     <>
-      <form onSubmit={(e) => {handleSubmit(e, {idUsuario,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList})}}>
+      <form onSubmit={
+        (e) => {
+          handleSubmit(e, {idUsuario,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList,setDisabled},{passwordError,repPasswordError});
+        }
+        }>
         <Header />
         <Box
           sx={{
@@ -331,6 +334,7 @@ export const RegistrarBedelPage = () => {
               <Button
                 type="submit"
                 variant="contained"
+                disabled = {disabled}
                 size="medium"
                 sx={{
                   width: "200px",
