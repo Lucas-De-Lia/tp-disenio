@@ -18,7 +18,7 @@ export const RegistrarBedelPage = () => {
     turno,
     password,
     repeatedPassword,
-    idUsuario,
+    username,
     onInputChange,
     onResetForm
   } = useForm({
@@ -27,7 +27,7 @@ export const RegistrarBedelPage = () => {
     turno: "",
     password: "",
     repeatedPassword: "",
-    idUsuario: "",
+    username: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -42,6 +42,7 @@ export const RegistrarBedelPage = () => {
 
   const handleClose = () => {
     setSuccess(false);
+    setErrorList(null);
     onResetForm();
   };
 
@@ -84,7 +85,7 @@ export const RegistrarBedelPage = () => {
     <>
       <form onSubmit={
         (e) => {
-          handleSubmit(e, {idUsuario,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList,setDisabled},{passwordError,repPasswordError});
+          handleSubmit(e, {username,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList,setDisabled},{passwordError,repPasswordError});
         }
         }>
         <Header />
@@ -216,10 +217,10 @@ export const RegistrarBedelPage = () => {
                     Nombre de usuario
                   </Typography>
                   <TextField
-                    name="idUsuario"
+                    name="username"
                     id="userName"
                     type="text"
-                    value={idUsuario}
+                    value={username}
                     onChange={onInputChange}
                   />
                   <Typography color="#5E6366" ml={1} mt={5} component="label" htmlFor="repPass">

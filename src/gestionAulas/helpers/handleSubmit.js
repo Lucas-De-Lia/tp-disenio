@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const handleSubmit = async (e,{idUsuario,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList,setDisabled},{passwordError,repPasswordError}) => {
+export const handleSubmit = async (e,{username,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList,setDisabled},{passwordError,repPasswordError}) => {
     e.preventDefault();
     setDisabled(true);
     if(!!passwordError || !!repPasswordError){
@@ -8,7 +8,8 @@ export const handleSubmit = async (e,{idUsuario,nombre,apellido,password,repeate
       return
     }else{
       const data = {
-        idUsuario,
+        idUsuario: "",
+        username,
         nombre,
         apellido,
         password,
@@ -16,7 +17,7 @@ export const handleSubmit = async (e,{idUsuario,nombre,apellido,password,repeate
         turno,
         registradoPor: JSON.parse(localStorage.getItem("user")).user,
       };
-
+      console.table(data);
       try {
         const headers = {
           "Content-Type": "application/json",
