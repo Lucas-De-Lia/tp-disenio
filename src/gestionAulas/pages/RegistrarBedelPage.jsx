@@ -1,28 +1,14 @@
-import {
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Modal,
-  Select,
-  TextField,
-  Typography,
-  List,
-  ListItem,
-} from "@mui/material";
+import { Box, Button, IconButton, InputAdornment, MenuItem, Select, TextField, Typography, List, ListItem } from "@mui/material";
 import { Header } from "../../components";
-import {
-  CheckCircleOutlineOutlined,
-  ErrorOutline,
-  LockOutlined,
-  VisibilityOffOutlined,
-  VisibilityOutlined,
-} from "@mui/icons-material";
-import { useState } from "react";
+import { ErrorOutline, LockOutlined, VisibilityOffOutlined, VisibilityOutlined } from "@mui/icons-material";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "../../hooks/useForm";
-import axios from "axios";
+import { SuccessModal } from "../modals/SuccessModal";
+import { ErrorModal } from "../modals/ErrorModal";
+import { CancelModal } from "../modals/CancelModal";
+import { handleSubmit } from "../helpers/handleSubmit";
+import { passwordAnalizer } from "../helpers/passwordAnalizer";
 
 export const RegistrarBedelPage = () => {
   const navigate = useNavigate();
@@ -35,7 +21,7 @@ export const RegistrarBedelPage = () => {
     repeatedPassword,
     idUsuario,
     onInputChange,
-    onResetForm,
+    onResetForm
   } = useForm({
     nombre: "",
     apellido: "",
@@ -46,13 +32,13 @@ export const RegistrarBedelPage = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirmation, setShowPasswordConfirmation] =
-    useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const [modal, setModal] = useState(false);
-
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [errorList, setErrorList] = useState(null);
+  const [passwordError, setPasswordError] = useState("");
+  const [repPasswordError, setRepPasswordError] = useState("");
 
   const handleClose = () => {
     setSuccess(false);
@@ -84,46 +70,20 @@ export const RegistrarBedelPage = () => {
     navigate("/dashboard");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    setPasswordError(passwordAnalizer(password));
+    setRepPasswordError(passwordAnalizer(repeatedPassword));
 
-    // TODO modificar el form o el back para no tener que hacer esto
-    const data = {
-      idUsuario,
-      nombre,
-      //habilitado: true, no es necesario
-      apellido,
-      password,
-      repeatedPassword,
-      turno,
-      registradoPor: JSON.parse(localStorage.getItem("user")).user,
-    };
-
-    try {
-      const headers = {
-        "Content-Type": "application/json",
-        // Authorization: "Bearer your-token-here", // TODO Para cuando este el token del login
-      };
-
-      const response = await axios.post(
-        "http://localhost:8080/api/create/bedel",
-        data,
-        { headers }
-      );
-      console.log("Response:", response.data);
-      setSuccess(true);
-      setError(null);
-      // TODO Manejar caso success, creo q era mostrar un modal de exito que dsp te lleve al dashboard
-    } catch (err) {
-      console.error("Error:", err);
-      setError(true);
-      setErrorList(err.response.data);
+    if(password !== repeatedPassword && repeatedPassword.length > 0 && password.length > 0){
+      setPasswordError("Las contraseñas no coinciden");
+      setRepPasswordError("Las contraseñas no coinciden");
     }
-  };
+  }, [password, repeatedPassword])
+  
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => {handleSubmit(e, {idUsuario,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList})}}>
         <Header />
         <Box
           sx={{
@@ -171,27 +131,29 @@ export const RegistrarBedelPage = () => {
                     width: "30%",
                   }}
                 >
-                  <Typography color="#5E6366" ml={1}>
+                  <Typography color="#5E6366" ml={1} component="label" htmlFor="nombre">
                     Nombre
                   </Typography>
                   <TextField
                     name="nombre"
+                    id="nombre"
                     value={nombre}
                     onChange={onInputChange}
                   />
-                  <Typography color="#5E6366" ml={1} mt={5}>
+                  <Typography color="#5E6366" ml={1} mt={5} component="label" htmlFor="turno">
                     Turno
                   </Typography>
-                  <Select name="turno" value={turno} onChange={onInputChange}>
+                  <Select name="turno" id="turno" value={turno} onChange={onInputChange}>
                     <MenuItem value={"MANIANA"}>Turno Mañana</MenuItem>
                     <MenuItem value={"TARDE"}>Turno Tarde</MenuItem>
                     <MenuItem value={"NOCHE"}>Turno Noche</MenuItem>
                   </Select>
-                  <Typography color="#5E6366" ml={1} mt={5}>
+                  <Typography color="#5E6366" ml={1} mt={5} component="label" htmlFor="password">
                     Contraseña
                   </Typography>
                   <TextField
                     name="password"
+                    id="password"
                     value={password}
                     onChange={onInputChange}
                     type={showPassword ? "text" : "password"}
@@ -216,11 +178,19 @@ export const RegistrarBedelPage = () => {
                       },
                     }}
                   />
-                  <Typography color="#5E6366" ml={1} variant="caption">
-                    La contraseña debe contener al menos 8 caracteres, y al
-                    menos incluir una mayúscula, un número y un signo especial
-                    (@#$%&*).
-                  </Typography>
+                {
+                    (!passwordError && password.length === 0)
+                    ?
+                      (<Typography color="#5E6366" ml={1} variant="caption">
+                        La contraseña debe contener al menos 8 caracteres, y al
+                        menos incluir una mayúscula, un número y un signo especial
+                        (@#$%&*).
+                      </Typography>)
+                      : 
+                      (<Typography color="error" ml={1} variant="caption">
+                        {passwordError}
+                      </Typography>)
+                  }
                 </Box>
                 <Box
                   sx={{
@@ -230,28 +200,31 @@ export const RegistrarBedelPage = () => {
                     width: "30%",
                   }}
                 >
-                  <Typography color="#5E6366" ml={1}>
+                  <Typography color="#5E6366" ml={1} component="label" htmlFor="apellido">
                     Apellido
                   </Typography>
                   <TextField
                     name="apellido"
+                    id="apellido"
                     value={apellido}
                     onChange={onInputChange}
                   />
-                  <Typography color="#5E6366" ml={1} mt={5}>
-                    Identificador de usuario
+                  <Typography color="#5E6366" ml={1} mt={5} component="label" htmlFor="userName">
+                    Nombre de usuario
                   </Typography>
                   <TextField
                     name="idUsuario"
-                    type="number"
+                    id="userName"
+                    type="text"
                     value={idUsuario}
                     onChange={onInputChange}
                   />
-                  <Typography color="#5E6366" ml={1} mt={5}>
+                  <Typography color="#5E6366" ml={1} mt={5} component="label" htmlFor="repPass">
                     Confirmar contraseña
                   </Typography>
                   <TextField
                     name="repeatedPassword"
+                    id="repPass"
                     value={repeatedPassword}
                     onChange={onInputChange}
                     type={showPasswordConfirmation ? "text" : "password"}
@@ -278,11 +251,19 @@ export const RegistrarBedelPage = () => {
                       },
                     }}
                   />
-                  <Typography color="#5E6366" ml={1} variant="caption">
-                    La contraseña debe contener al menos 8 caracteres, y al
-                    menos incluir una mayúscula, un número y un signo especial
-                    (@#$%&*).
-                  </Typography>
+                {
+                    (!repPasswordError && repeatedPassword.length === 0)
+                    ?
+                      (<Typography color="#5E6366" ml={1} variant="caption">
+                        La contraseña debe contener al menos 8 caracteres, y al
+                        menos incluir una mayúscula, un número y un signo especial
+                        (@#$%&*).
+                      </Typography>)
+                      : 
+                      (<Typography color="error" ml={1} variant="caption">
+                        {repPasswordError}
+                      </Typography>)
+                  }
                 </Box>
               </Box>
             </Box>
@@ -324,13 +305,9 @@ export const RegistrarBedelPage = () => {
                 </List>
               </Box>
             )}
-
-            {/* 
-                  
+            {/*  
                   BOTONES DE CANCELAR Y REGISTRAR
-
             */}
-
             <Box
               display="flex"
               justifyContent="center"
@@ -350,65 +327,7 @@ export const RegistrarBedelPage = () => {
               >
                 Cancelar
               </Button>
-              {/* 
-                
-                    MODAL DE CANCELAR
-                
-              */}
-              <Modal open={modal} onClose={() => handleModal(false)}>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    background: "white",
-                    width: "30%",
-                    height: "30%",
-                    borderRadius: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="h5" component="h5" mt={5}>
-                    ¿Está seguro que desea cancelar?
-                  </Typography>
-                  <Box
-                    display="flex"
-                    justifyContent="space-around"
-                    alignItems="center"
-                    mt={5}
-                  >
-                    <Box display="flex" alignItems="center" gap={5}>
-                      <Button
-                        variant="outlined"
-                        size="medium"
-                        sx={{
-                          width: "100px",
-                          color: "#32936F",
-                          borderColor: "#32936F",
-                        }}
-                        onClick={() => handleModal(false)}
-                      >
-                        No
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        sx={{
-                          width: "100px",
-                          backgroundColor: "#32936F",
-                        }}
-                        onClick={handleExit}
-                      >
-                        Si
-                      </Button>
-                    </Box>
-                  </Box>
-                </Box>
-              </Modal>
+              <CancelModal modal={modal} handleModal={handleModal} handleExit={handleExit}/>
               <Button
                 type="submit"
                 variant="contained"
@@ -420,136 +339,8 @@ export const RegistrarBedelPage = () => {
               >
                 Registrar bedel
               </Button>
-              {/* 
-                
-                  MODAL DE EXITO
-                
-                */}
-              <Modal open={success} onClose={handleClose}>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    background: "white",
-                    width: "35%",
-                    height: "35%",
-                    borderRadius: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="h5" component="h5" mt={5}>
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      gap={2}
-                    >
-                      El bedel se ha registrado con exito!
-                      <CheckCircleOutlineOutlined
-                        sx={{ color: "#32936F", fontSize: 60 }}
-                      />
-                    </Box>
-                  </Typography>
-                  <Box
-                    display="flex"
-                    justifyContent="space-around"
-                    alignItems="center"
-                    mt={5}
-                  >
-                    <Box display="flex" alignItems="center" gap={5}>
-                      <Button
-                        variant="outlined"
-                        size="medium"
-                        sx={{
-                          width: "200px",
-                          color: "#32936F",
-                          borderColor: "#32936F",
-                          height: "50px",
-                        }}
-                        onClick={handleClose}
-                      >
-                        Registrar otro bedel
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        sx={{
-                          width: "200px",
-                          backgroundColor: "#32936F",
-                          height: "50px",
-                        }}
-                        onClick={handleSuccessExit}
-                      >
-                        Salir
-                      </Button>
-                    </Box>
-                  </Box>
-                </Box>
-              </Modal>
-              {/* 
-                
-                    MODAL DE ERROR
-                
-                */}
-              <Modal open={error} onClose={() => handleErrorModal(false)}>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    background: "white",
-                    width: "35%",
-                    height: "35%",
-                    borderRadius: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 5,
-                  }}
-                >
-                  <Typography variant="h6" component="h5" mt={5}>
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      textAlign="center"
-                      gap={2}
-                    >
-                      Algunos campos no son válidos, por favor verifique los
-                      datos ingresados.
-                      <ErrorOutline sx={{ color: "#32936F", fontSize: 60 }} />
-                    </Box>
-                  </Typography>
-                  <Box
-                    display="flex"
-                    justifyContent="space-around"
-                    alignItems="center"
-                    mt={5}
-                  >
-                    <Box display="flex" alignItems="center" gap={5}>
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        sx={{
-                          width: "200px",
-                          backgroundColor: "#32936F",
-                          height: "50px",
-                        }}
-                        onClick={() => handleErrorModal(false)}
-                      >
-                        Aceptar
-                      </Button>
-                    </Box>
-                  </Box>
-                </Box>
-              </Modal>
+              <SuccessModal success={success} handleClose={handleClose} handleSuccessExit={handleSuccessExit}/>
+              <ErrorModal error={error} handleErrorModal={handleErrorModal}/>
             </Box>
           </Box>
         </Box>
