@@ -133,6 +133,7 @@ export const RegistrarBedelPage = () => {
                     flexDirection: "column",
                     gap: "1px",
                     width: "30%",
+                    height: "400px"
                   }}
                 >
                   <Typography color="#5E6366" ml={1} component="label" htmlFor="nombre">
@@ -202,6 +203,7 @@ export const RegistrarBedelPage = () => {
                     flexDirection: "column",
                     gap: "1px",
                     width: "30%",
+                    height: "400px"
                   }}
                 >
                   <Typography color="#5E6366" ml={1} component="label" htmlFor="apellido">
