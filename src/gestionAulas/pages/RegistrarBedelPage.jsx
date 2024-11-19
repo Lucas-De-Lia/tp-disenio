@@ -148,7 +148,11 @@ export const RegistrarBedelPage = () => {
                   <Typography color="#5E6366" ml={1} mt={5} component="label" htmlFor="turno">
                     Turno
                   </Typography>
-                  <Select name="turno" id="turno" value={turno} onChange={onInputChange}>
+                  <Select name="turno" id="turno" value={turno} onChange={onInputChange}
+                    MenuProps={{
+                      disableScrollLock: true, // Evita bloquear el desplazamiento del body
+                  }}
+                  >
                     <MenuItem value={"MANIANA"}>Turno Mañana</MenuItem>
                     <MenuItem value={"TARDE"}>Turno Tarde</MenuItem>
                     <MenuItem value={"NOCHE"}>Turno Noche</MenuItem>
