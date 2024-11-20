@@ -1,12 +1,23 @@
-import { Table, TableCell, TableContainer, TableHead, TableRow } from "@mui/material"
+import { Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow } from "@mui/material"
+import { BuscarBedelTableRows } from "./BuscarBedelTableRows"
+import { BuscarBedelTableFooter } from "./BuscarBedelTableFooter"
 
 
 export const BuscarBedelTable = () => {
   return (
-    <TableContainer sx={{mt:5}}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+    <TableContainer sx={{
+        width:"80%",
+        mt:2
+    }}>
+        <Table>
             <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    "& th": {
+                      borderBottom: "3px solid black",
+                    },
+                  }}  
+                >
                     <TableCell align="center">Apellido</TableCell>
                     <TableCell align="center">Nombre</TableCell>
                     <TableCell align="center">Turno</TableCell>
@@ -14,6 +25,12 @@ export const BuscarBedelTable = () => {
                     <TableCell align="center">Modificar/Eliminar</TableCell>
                 </TableRow>
             </TableHead>
+            <TableBody>
+              <BuscarBedelTableRows/>
+            </TableBody>
+            <TableFooter>
+              <BuscarBedelTableFooter/>
+            </TableFooter>
         </Table>
     </TableContainer>
   )

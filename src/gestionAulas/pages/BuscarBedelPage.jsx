@@ -37,8 +37,8 @@ export const BuscarBedelPage = () => {
         <Box
             sx={{
                 background:"linear-gradient(180deg, #32936F 30% , #328880 60%,#32838A 74%,#29768D 88%)",
-                minHeight: "100vh",
-                minwidth: "100vw",
+                Height: "100vh",
+                width: "100%",
                 display:"flex",
                 alignItems:"center",
                 justifyContent:"center"
@@ -47,10 +47,16 @@ export const BuscarBedelPage = () => {
             <Box
                 sx={{
                     background:"white",
-                    marginTop:"50px",
+                    mt:"50px",
+                    mb: "50px",
+                    padding:5,
                     borderRadius:2,
                     width: "60%",
-                    minHeight: "90vh",
+                    Height: "80%",
+                    display:"flex",
+                    flexDirection:"column",
+                    alignItems:"center",
+                    justifyContent:"flex-start",
                 }}
             >
                 <Typography
@@ -62,14 +68,6 @@ export const BuscarBedelPage = () => {
                 >
                     Buscar bedel
                 </Typography>
-                <Box
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    width="80%"
-                    minHeight="100%"
-                >
                     <Box
                         display="flex"
                         flexDirection="row"
@@ -136,7 +134,7 @@ export const BuscarBedelPage = () => {
                             </Select>
                         </Box>
                     </Box>
-                    {/*  aca voy a renderizar el componente con los bedeles */}
+                        {/*  aca voy a renderizar el componente con los bedeles */}
                     <BuscarBedelTable/>
                     <Box
                         display="flex"
@@ -151,12 +149,11 @@ export const BuscarBedelPage = () => {
                                 width: "200px",
                                 color: "#32936F",
                                 borderColor: "#32936F",
-                            }}
-                            onClick={handleModal}
-                        >
-                            Cancelar
-                        </Button>     
-                    </Box>
+                        }}
+                        onClick={handleModal}
+                    >
+                        Cancelar
+                    </Button>     
                 </Box>
             </Box>
         </Box>
