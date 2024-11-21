@@ -15,7 +15,7 @@ export const BuscarBedelPage = () => {
     const [filtro, setFiltro] = useState("");
 
     const [modal, setModal] = useState(false);
-
+    
     const handleBuscador = (e) => {
         setBuscador(e.target.value)
     }
@@ -140,7 +140,7 @@ export const BuscarBedelPage = () => {
                         display="flex"
                         alignContent = "center"
                         justifyContent="center"
-                        mt={5}
+                        mt={1}
                     >
                         <Button
                             variant="outlined"

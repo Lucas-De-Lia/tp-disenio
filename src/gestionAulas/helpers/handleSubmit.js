@@ -25,7 +25,7 @@ export const handleSubmit = async (e,{username,nombre,apellido,password,repeated
         };
 
         const response = await axios.post(
-          "http://localhost:8080/api/create/bedel",
+          "http://localhost:8080/api/bedeles",
           data,
           { headers }
         );
