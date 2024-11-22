@@ -135,7 +135,7 @@ export const BuscarBedelPage = () => {
                         </Box>
                     </Box>
                         {/*  aca voy a renderizar el componente con los bedeles */}
-                    <BuscarBedelTable/>
+                    <BuscarBedelTable buscador={buscador} filtro={filtro}/>
                     <Box
                         display="flex"
                         alignContent = "center"

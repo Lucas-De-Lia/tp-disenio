@@ -3,9 +3,20 @@ import { BuscarBedelTableRows } from "./BuscarBedelTableRows"
 import { BuscarBedelTableFooter } from "./BuscarBedelTableFooter"
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { BedelNoEncontrado } from "./BedelNoEncontrado"
 
+const FILTROS = {
+  Apellido: "Apellido",
+  Turno:"Turno"
+}
 
-export const BuscarBedelTable = () => {
+const TURNOS = {
+  MANIANA: "MANIANA",
+  TARDE: "TARDE",
+  NOCHE: "NOCHE"
+}
+
+export const BuscarBedelTable = ({buscador, filtro}) => {
 
   const [bedeles, setBedeles] = useState([]);
 
@@ -31,12 +42,58 @@ export const BuscarBedelTable = () => {
     }
   }
 
+  const filtrarPorApellido = async () => {
+    try{
+      const data = await axios.get(`http://localhost:8080/api/bedeles/search?apellido=${buscador}`);
+      setBedeles(data.data);
+      console.log(data.data);
+    }catch(err){
+      setError(true);
+      console.error("Error:", err);
+    }
+  }
+
+  const filtrarPorTurno = async () => {
+    try{
+      const data = await axios.get(`http://localhost:8080/api/bedeles/search?turno=${buscador}`);
+      setBedeles(data.data);
+      console.log(data.data);
+    }catch(err){
+      setError(true);
+      console.error("Error:", err);
+    }
+  }
+
   useEffect(() => {
       solicitarBedel();
   }, []);
 
+  useEffect(() => {
+    if(filtro === ""){
+      setError(false);
+      return;
+    }else{
+      if(filtro === FILTROS.Apellido){
+        if(buscador === ""){
+          setError(false);
+          solicitarBedel();
+        }else{
+          setError(false);
+          filtrarPorApellido();
+        }
+      }else{
+        if(filtro === FILTROS.Turno){
+          //LAMADA API
+        }
+      }
+    }
+  }, [buscador]);
+  
+
   return (
-    <TableContainer 
+    <>
+    {error ? <BedelNoEncontrado/> :(
+      <TableContainer 
       sx={{
         width:"700px",
         height:"500px",
@@ -68,5 +125,8 @@ export const BuscarBedelTable = () => {
             </TableFooter>
         </Table>
     </TableContainer>
+    )
+    }
+    </>
   )
 }
