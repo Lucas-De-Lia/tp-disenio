@@ -35,6 +35,7 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
     try{
         const data = await axios.get("http://localhost:8080/api/bedeles");
         setBedeles(data.data);
+        if(error)setError(false);
         console.log(data.data);
     }catch(err){
         setError(true);
@@ -46,6 +47,7 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
     try{
       const data = await axios.get(`http://localhost:8080/api/bedeles/search?apellido=${buscador}`);
       setBedeles(data.data);
+      if(error)setError(false);
       console.log(data.data);
     }catch(err){
       setError(true);
@@ -53,16 +55,21 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
     }
   }
 
-  const filtrarPorTurno = async () => {
+  const filtrarPorTurno = async (turno) => {
     try{
-      const data = await axios.get(`http://localhost:8080/api/bedeles/search?turno=${buscador}`);
+      const data = await axios.get(`http://localhost:8080/api/bedeles/search?turno=${turno}`);
       setBedeles(data.data);
+      if(error)setError(false);
       console.log(data.data);
     }catch(err){
       setError(true);
       console.error("Error:", err);
     }
   }
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [bedeles]);
 
   useEffect(() => {
       solicitarBedel();
@@ -70,20 +77,33 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
 
   useEffect(() => {
     if(filtro === ""){
-      setError(false);
       return;
     }else{
       if(filtro === FILTROS.Apellido){
         if(buscador === ""){
-          setError(false);
           solicitarBedel();
         }else{
-          setError(false);
           filtrarPorApellido();
         }
       }else{
         if(filtro === FILTROS.Turno){
-          //LAMADA API
+          if(buscador === ""){
+            solicitarBedel();
+          }else{
+            if(buscador.charAt(0).toUpperCase() === "M"){
+              filtrarPorTurno(TURNOS.MANIANA);
+            }else{
+              if(buscador.charAt(0).toUpperCase() === "T"){
+                filtrarPorTurno(TURNOS.TARDE);
+              }else{
+                if(buscador.charAt(0).toUpperCase() === "N"){
+                  filtrarPorTurno(TURNOS.NOCHE);
+                }else{
+                  setError(true);
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -121,7 +141,7 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
               <BuscarBedelTableRows bedeles={filasActuales}/>
             </TableBody>
             <TableFooter>
-              <BuscarBedelTableFooter paginaActual={paginaActual} cantidadFilas = {(bedeles.length % 2 !== 0)? Math.trunc(bedeles.length / filasPorPagina)+1 : Math.trunc(bedeles.length / filasPorPagina)} setPaginaActual={setPaginaActual}/>
+              <BuscarBedelTableFooter paginaActual={paginaActual} cantidadFilas = {(bedeles.length % 5 !== 0)? Math.trunc(bedeles.length / filasPorPagina)+1 : Math.trunc(bedeles.length / filasPorPagina)} setPaginaActual={setPaginaActual}/>
             </TableFooter>
         </Table>
     </TableContainer>

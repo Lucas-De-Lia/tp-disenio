@@ -1,8 +1,19 @@
 import { DeleteOutline, EditNote } from "@mui/icons-material"
 import { Box, IconButton, TableCell, TableRow } from "@mui/material"
+import { EliminarBedelModal } from "../modals/EliminarBedelModal";
+import { useState } from "react";
 
 
 export const BuscarBedelTableRows = ({bedeles}) => {
+
+    const [eliminarModal, setEliminarModal] = useState(false);
+    const [id, setId] = useState(null);
+
+    const handleEliminarModal = (id) =>{
+        setId(id);
+        setEliminarModal(!eliminarModal);
+    }
+
   return (
     <>
         {bedeles.map((row)=>(
@@ -23,13 +34,19 @@ export const BuscarBedelTableRows = ({bedeles}) => {
                         <IconButton sx={{color:"black"}}>
                             <EditNote/>
                         </IconButton>
-                        <IconButton sx={{color:'black'}}>
+                        <IconButton 
+                            sx={{color:'black'}}
+                            onClick={() => {handleEliminarModal(row.idUsuario); }}
+                        >
                             <DeleteOutline/>
                         </IconButton>
                     </Box>
                 </TableCell>
             </TableRow>
-        ))}
+            
+        ))
+        }
+        <EliminarBedelModal open ={ eliminarModal } close = { handleEliminarModal } id={id} />
     </>
   )
 }
