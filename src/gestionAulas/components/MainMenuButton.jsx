@@ -1,7 +1,5 @@
-import React from 'react';
 import { Box, CardMedia, Typography } from '@mui/material';
 import { Link } from "react-router-dom";
-import MainPageImage from '../../assets/img/MainPageImage.png';
 
 export const MainMenuButton = ({link, image, text, alt}) => {
 
