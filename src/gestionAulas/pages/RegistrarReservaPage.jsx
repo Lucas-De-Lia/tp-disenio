@@ -10,10 +10,13 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  IconButton,
 } from "@mui/material";
 //import Header from "../../components/Header";
-import { CalendarMonth, ErrorOutline } from "@mui/icons-material";
-import { useState } from "react";
+import { Delete, Edit, ErrorOutline } from "@mui/icons-material";
+import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "../../hooks/useForm";
 import { SuccessModal } from "../modals/SuccessModal";
@@ -47,8 +50,6 @@ export const RegistrarReservaPage = () => {
     tipoAula,
     email,
     periodoReserva,
-    diasReservaPeriodo,
-    diasReservaEsporadica,
     onInputChange,
     onResetForm,
   } = useForm({
@@ -60,8 +61,6 @@ export const RegistrarReservaPage = () => {
     cantidadAlumnos: 0,
     email: "",
     periodoReserva: "",
-    diasReservaPeriodo: {},
-    diasReservaEsporadica: [],
   });
 
   const [modal, setModal] = useState(false);
@@ -95,6 +94,14 @@ export const RegistrarReservaPage = () => {
 
   const [duracionModalOpen, setDuracionModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
+  const [esPeriodo, setEsPeriodo] = useState(false);
+  const [diasReservaPeriodo, setDiasReservaPeriodo] = useState({});
+  const [diasReservaEsporadica, setDiasReservaEsporadica] = useState({});
+
+  useEffect(() => {
+    console.log("dias esp", diasReservaEsporadica);
+    console.log("dias per", diasReservaPeriodo);
+  }, [diasReservaEsporadica, diasReservaPeriodo]);
 
   const handleModalOpen = (day) => {
     setSelectedDay(day);
@@ -106,14 +113,52 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleModalAccept = (hour, duration) => {
-    diasReservaPeriodo[selectedDay] = { horaInicio: hour, duracion: duration };
+    if (esPeriodo) {
+      setDiasReservaPeriodo((prev) => ({
+        ...prev,
+        [selectedDay]: { horaInicio: hour, duracion: duration },
+      }));
+    } else {
+      setDiasReservaEsporadica((prev) => ({
+        ...prev,
+        [selectedDay]: { horaInicio: hour, duracion: duration },
+      }));
+    }
   };
 
   const handleCheckboxChange = (event, dia) => {
+    setEsPeriodo(true);
     if (event.target.checked) handleModalOpen(dia);
     else {
-      delete diasReservaPeriodo[dia];
+      setDiasReservaPeriodo((prev) => {
+        const updated = { ...prev };
+        delete updated[dia];
+        return updated;
+      });
     }
+  };
+
+  const handleCalendarPick = (dia) => {
+    setEsPeriodo(false);
+    handleModalOpen(dia);
+    /* if (!diasReservaEsporadica.find((reserva) => reserva.dia === dia)) {
+      handleModalOpen(dia);
+    } else {
+      setDiasReservaEsporadica((prev) =>
+        prev.filter((reserva) => reserva.dia !== dia)
+      );
+    } */
+  };
+
+  const handleEdit = (dia) => {
+    setSelectedDay(dia);
+    setDuracionModalOpen(true);
+  };
+
+  const handleDelete = (dia) => {
+    setDiasReservaEsporadica((prev) =>
+      prev.filter((reserva) => reserva.dia !== dia)
+    );
   };
 
   return (
@@ -151,6 +196,7 @@ export const RegistrarReservaPage = () => {
             minHeight: "90%",
             paddingY: 7,
             borderRadius: 2,
+            overflow: "auto",
           }}
         >
           <Box>
@@ -177,7 +223,7 @@ export const RegistrarReservaPage = () => {
                   flexDirection: "column",
                   gap: "1px",
                   width: "30%",
-                  height: "400px",
+                  height: "100%",
                 }}
               >
                 <Typography
@@ -391,6 +437,43 @@ export const RegistrarReservaPage = () => {
                     >
                       Dias seleccionados
                     </Typography>
+                    <List>
+                      {Object.entries(diasReservaEsporadica).map(
+                        ([dia, reserva], index) => (
+                          <ListItem
+                            key={index}
+                            secondaryAction={
+                              <>
+                                <IconButton
+                                  edge="end"
+                                  aria-label="edit"
+                                  onClick={() => handleEdit(dia)}
+                                >
+                                  <Edit />
+                                </IconButton>
+                                <IconButton
+                                  edge="end"
+                                  aria-label="delete"
+                                  onClick={() => handleDelete(dia)}
+                                >
+                                  <Delete />
+                                </IconButton>
+                              </>
+                            }
+                          >
+                            <Typography>
+                              {dia}: {reserva.horaInicio} hs, {reserva.duracion}{" "}
+                              min
+                            </Typography>
+                          </ListItem>
+                        )
+                      )}
+                      {Object.keys(diasReservaEsporadica).length === 0 && (
+                        <ListItem>
+                          <Typography>No se han seleccionado dias</Typography>
+                        </ListItem>
+                      )}
+                    </List>
                     <Box
                       sx={{
                         border: "1px solid #E0E0E0", // Light gray border
@@ -409,7 +492,17 @@ export const RegistrarReservaPage = () => {
                       >
                         Seleccionar dias a reservar
                       </Typography>
-                      <CalendarMonth />
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <StaticDatePicker
+                          displayStaticWrapperAs="desktop"
+                          openTo="day"
+                          //value={today}
+                          onChange={(date) =>
+                            handleCalendarPick(date.format("DD/MM/YYYY"))
+                          }
+                          //renderInput={(params) => <TextField {...params} />}
+                        />
+                      </LocalizationProvider>
                     </Box>
                   </>
                 )}
@@ -453,6 +546,7 @@ export const RegistrarReservaPage = () => {
                   <MenuItem value={"TARDE"}>Turno Tarde</MenuItem>
                   <MenuItem value={"NOCHE"}>Turno Noche</MenuItem>
                 </Select>
+                <br />
               </Box>
               <Box
                 sx={{
@@ -460,7 +554,7 @@ export const RegistrarReservaPage = () => {
                   flexDirection: "column",
                   gap: "1px",
                   width: "30%",
-                  height: "400px",
+                  height: "100%",
                 }}
               >
                 <Typography
