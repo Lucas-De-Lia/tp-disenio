@@ -11,6 +11,7 @@ import {
   FormControlLabel,
   Checkbox,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
 //import Header from "../../components/Header";
 import { Delete, Edit, ErrorOutline } from "@mui/icons-material";
@@ -50,6 +51,7 @@ export const RegistrarReservaPage = () => {
     tipoAula,
     email,
     periodoReserva,
+    search,
     onInputChange,
     onResetForm,
   } = useForm({
@@ -61,6 +63,7 @@ export const RegistrarReservaPage = () => {
     cantidadAlumnos: 0,
     email: "",
     periodoReserva: "",
+    search: "",
   });
 
   const [modal, setModal] = useState(false);
@@ -97,6 +100,7 @@ export const RegistrarReservaPage = () => {
   const [esPeriodo, setEsPeriodo] = useState(false);
   const [diasReservaPeriodo, setDiasReservaPeriodo] = useState({});
   const [diasReservaEsporadica, setDiasReservaEsporadica] = useState({});
+  const [options, setOptions] = useState([]);
 
   useEffect(() => {
     console.log("dias esp", diasReservaEsporadica);
@@ -159,6 +163,24 @@ export const RegistrarReservaPage = () => {
     setDiasReservaEsporadica((prev) =>
       prev.filter((reserva) => reserva.dia !== dia)
     );
+  };
+
+  const handleConsulta = () => {
+    console.log("logica consulta");
+  };
+
+  const handleSearchChange = async (event, value) => {
+    try {
+      //logica busca materias
+      const response = [
+        { name: "Matematica 1" },
+        { name: "Matematica 2" },
+        { name: "Matematica 3" },
+      ];
+      setOptions(response);
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
   };
 
   return (
@@ -542,10 +564,27 @@ export const RegistrarReservaPage = () => {
                     disableScrollLock: true, // Evita bloquear el desplazamiento del body
                   }}
                 >
-                  <MenuItem value={"MANIANA"}>Turno Mañana</MenuItem>
-                  <MenuItem value={"TARDE"}>Turno Tarde</MenuItem>
-                  <MenuItem value={"NOCHE"}>Turno Noche</MenuItem>
+                  <MenuItem value={"aulaMultimedios"}>
+                    Aula Multimedios
+                  </MenuItem>
+                  <MenuItem value={"aulaInfomatica"}>Aula Informatica</MenuItem>
+                  <MenuItem value={"aulaRegular"}>Aula Regular</MenuItem>
                 </Select>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  sx={{
+                    width: "100 %",
+                    color: "#32936F",
+                    borderColor: "#32936F",
+                    marginTop: 4,
+                    paddingY: 1.5,
+                    borderRadius: 3,
+                  }}
+                  onClick={() => handleConsulta()}
+                >
+                  Consultar disponibilidad
+                </Button>
                 <br />
               </Box>
               <Box
@@ -581,6 +620,28 @@ export const RegistrarReservaPage = () => {
                   value={apellido}
                   onChange={onInputChange}
                   placeholder="Apellido"
+                />
+
+                <Autocomplete
+                  freeSolo
+                  options={options.map((option) => option.name)}
+                  onInputChange={handleSearchChange}
+                  onChange={(event, newValue) => {
+                    onInputChange({
+                      target: { name: "search", value: newValue },
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="search"
+                      id="search"
+                      value={search}
+                      onChange={onInputChange}
+                      placeholder="Buscar"
+                      sx={{ marginTop: 4, marginLeft: 1 }}
+                    />
+                  )}
                 />
 
                 <TextField

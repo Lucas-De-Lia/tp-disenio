@@ -13,6 +13,7 @@ import {
 const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
   const [hour, setHour] = useState("");
   const [duration, setDuration] = useState("");
+  const [durationError, setDurationError] = useState(false);
 
   const handleHourChange = (e) => {
     setHour(e.target.value);
@@ -20,14 +21,18 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
 
   const handleDurationChange = (e) => {
     const value = e.target.value;
-    // if (value === "" || (Number(value) % 30 === 0 && Number(value) > 0)) {
     setDuration(value);
-    // }
   };
 
   const handleAcceptClick = () => {
-    handleAccept(hour, duration);
-    handleClose();
+    const value = Number(duration);
+    if (value === "" || (value % 30 === 0 && value > 0)) {
+      setDurationError(false);
+      handleAccept(hour, duration);
+      handleClose();
+    } else {
+      setDurationError(true);
+    }
   };
 
   return (
@@ -35,7 +40,6 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
       <DialogTitle>Hora y duracion del {dia}</DialogTitle>
       <DialogContent>
         <TextField
-          label="Hour"
           type="time"
           value={hour}
           onChange={handleHourChange}
@@ -49,8 +53,9 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
           onChange={handleDurationChange}
           fullWidth
           margin="normal"
+          error={durationError}
         />
-        <Typography variant="caption" color="textSecondary" fullWidth>
+        <Typography variant="caption" color="textSecondary">
           La duracion debe ser multiplo de 30.
         </Typography>
       </DialogContent>
