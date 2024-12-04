@@ -30,10 +30,13 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
 
   const filasActuales = bedeles.slice(indiceDeArranque, indiceDeArranque + filasPorPagina);
 
+  const actualizarBedeles = () =>{
+    solicitarBedel();
+  }
 
   const solicitarBedel = async () => {
     try{
-        const data = await axios.get("http://localhost:8080/api/bedeles");
+        const data = await axios.get("http://localhost:8080/api/bedeles/habilitados");
         setBedeles(data.data);
         if(error)setError(false);
         console.log(data.data);
@@ -138,7 +141,7 @@ export const BuscarBedelTable = ({buscador, filtro}) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-              <BuscarBedelTableRows bedeles={filasActuales}/>
+              <BuscarBedelTableRows bedeles={filasActuales} actualizarBedeles = {actualizarBedeles}/>
             </TableBody>
             <TableFooter>
               <BuscarBedelTableFooter paginaActual={paginaActual} cantidadFilas = {(bedeles.length % 5 !== 0)? Math.trunc(bedeles.length / filasPorPagina)+1 : Math.trunc(bedeles.length / filasPorPagina)} setPaginaActual={setPaginaActual}/>

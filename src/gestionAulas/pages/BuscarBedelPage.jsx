@@ -37,7 +37,6 @@ export const BuscarBedelPage = () => {
         <Box
             sx={{
                 background:"linear-gradient(180deg, #32936F 30% , #328880 60%,#32838A 74%,#29768D 88%)",
-                Height: "100vh",
                 width: "100%",
                 display:"flex",
                 alignItems:"center",
