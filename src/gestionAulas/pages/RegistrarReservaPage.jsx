@@ -13,7 +13,7 @@ import {
   IconButton,
   Autocomplete,
 } from "@mui/material";
-//import Header from "../../components/Header";
+import { Header } from "../../components/Header";
 import { Delete, Edit, ErrorOutline } from "@mui/icons-material";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -98,14 +98,9 @@ export const RegistrarReservaPage = () => {
   const [duracionModalOpen, setDuracionModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
   const [esPeriodo, setEsPeriodo] = useState(false);
-  const [diasReservaPeriodo, setDiasReservaPeriodo] = useState({});
-  const [diasReservaEsporadica, setDiasReservaEsporadica] = useState({});
+  const [diasReservaPeriodo, setDiasReservaPeriodo] = useState([]);
+  const [diasReservaEsporadica, setDiasReservaEsporadica] = useState([]);
   const [options, setOptions] = useState([]);
-
-  useEffect(() => {
-    console.log("dias esp", diasReservaEsporadica);
-    console.log("dias per", diasReservaPeriodo);
-  }, [diasReservaEsporadica, diasReservaPeriodo]);
 
   const handleModalOpen = (day) => {
     setSelectedDay(day);
@@ -117,41 +112,37 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleModalAccept = (hour, duration) => {
+    const newReserva = {
+      dia: selectedDay,
+      horaInicio: hour,
+      duracion: duration,
+    };
     if (esPeriodo) {
-      setDiasReservaPeriodo((prev) => ({
-        ...prev,
-        [selectedDay]: { horaInicio: hour, duracion: duration },
-      }));
+      setDiasReservaPeriodo((prev) => [...prev, newReserva]);
     } else {
-      setDiasReservaEsporadica((prev) => ({
-        ...prev,
-        [selectedDay]: { horaInicio: hour, duracion: duration },
-      }));
+      setDiasReservaEsporadica((prev) => [...prev, newReserva]);
     }
   };
 
   const handleCheckboxChange = (event, dia) => {
     setEsPeriodo(true);
-    if (event.target.checked) handleModalOpen(dia);
-    else {
-      setDiasReservaPeriodo((prev) => {
-        const updated = { ...prev };
-        delete updated[dia];
-        return updated;
-      });
+    if (event.target.checked) {
+      handleModalOpen(dia);
+    } else {
+      setDiasReservaPeriodo((prev) =>
+        prev.filter((reserva) => reserva.dia !== dia)
+      );
     }
   };
+
+  useEffect(() => {
+    console.log(diasReservaPeriodo);
+    console.log(diasReservaEsporadica);
+  }, [diasReservaEsporadica, diasReservaPeriodo]);
 
   const handleCalendarPick = (dia) => {
     setEsPeriodo(false);
     handleModalOpen(dia);
-    /* if (!diasReservaEsporadica.find((reserva) => reserva.dia === dia)) {
-      handleModalOpen(dia);
-    } else {
-      setDiasReservaEsporadica((prev) =>
-        prev.filter((reserva) => reserva.dia !== dia)
-      );
-    } */
   };
 
   const handleEdit = (dia) => {
@@ -166,6 +157,26 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleConsulta = () => {
+    //envia objeto data:
+    // {
+    //   tipoReserva: string,
+    //   periodoReserva: string, // solo si es periodo
+    //   diasReservaPeriodo: {
+    //    dia: string, ("lunes", "martes", "miercoles", "jueves", "viernes")
+    //    horaInicio: string,
+    //    duracion: number,
+    //   }[],  // solo si es periodo
+    //   diasReservaEsporadica: {
+    //    dia: string, (fecha en formato "DD/MM/YYYY")
+    //    horaInicio: string,
+    //    duracion: number,
+    //   }[],  // solo si es esporadica
+    //   cantidadAlumnos: cantidadAlumnos,
+    //   tipoAula: tipoAula,
+    //  }
+
+    //recibe respuesta con disponibilidad de aulas
+    //recibe el mismo objeto pero dentro de cada dia se agrega un booleano "disponible"
     console.log("logica consulta");
   };
 
@@ -198,7 +209,7 @@ export const RegistrarReservaPage = () => {
         );
       }}
     >
-      {/* <Header /> */}
+      <Header />
       <Box
         sx={{
           background:
@@ -324,126 +335,42 @@ export const RegistrarReservaPage = () => {
                         Seleccionar dias a reservar
                       </Typography>
                       <FormGroup>
-                        <>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                onChange={(event) =>
-                                  handleCheckboxChange(event, "Lunes")
+                        {[
+                          "Lunes",
+                          "Martes",
+                          "Miercoles",
+                          "Jueves",
+                          "Viernes",
+                        ].map((dia) => {
+                          const reserva = diasReservaPeriodo.find(
+                            (reserva) => reserva.dia === dia
+                          );
+                          return (
+                            <div key={dia}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!reserva}
+                                    onChange={(event) =>
+                                      handleCheckboxChange(event, dia)
+                                    }
+                                  />
                                 }
+                                label={dia}
                               />
-                            }
-                            label="Lunes"
-                          />
-                          {diasReservaPeriodo["Lunes"] && (
-                            <>
-                              <Typography>
-                                Horario:{" "}
-                                {diasReservaPeriodo["Lunes"].horaInicio} hs
-                              </Typography>
-                              <Typography>
-                                Duracion: {diasReservaPeriodo["Lunes"].duracion}{" "}
-                                min
-                              </Typography>
-                            </>
-                          )}
-                        </>
-                        <>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                onChange={(event) =>
-                                  handleCheckboxChange(event, "Martes")
-                                }
-                              />
-                            }
-                            label="Martes"
-                          />
-                          {diasReservaPeriodo["Martes"] && (
-                            <>
-                              <Typography>
-                                Horario:{" "}
-                                {diasReservaPeriodo["Martes"].horaInicio} hs
-                              </Typography>
-                              <Typography>
-                                Duracion:{" "}
-                                {diasReservaPeriodo["Martes"].duracion} min
-                              </Typography>
-                            </>
-                          )}
-                        </>
-                        <>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                onChange={(event) =>
-                                  handleCheckboxChange(event, "Miercoles")
-                                }
-                              />
-                            }
-                            label="Miercoles"
-                          />
-                          {diasReservaPeriodo["Miercoles"] && (
-                            <>
-                              <Typography>
-                                Horario:{" "}
-                                {diasReservaPeriodo["Miercoles"].horaInicio} hs
-                              </Typography>
-                              <Typography>
-                                Duracion:{" "}
-                                {diasReservaPeriodo["Miercoles"].duracion} min
-                              </Typography>
-                            </>
-                          )}
-                        </>
-                        <>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                onChange={(event) =>
-                                  handleCheckboxChange(event, "Jueves")
-                                }
-                              />
-                            }
-                            label="Jueves"
-                          />
-                          {diasReservaPeriodo["Jueves"] && (
-                            <>
-                              <Typography>
-                                Horario:{" "}
-                                {diasReservaPeriodo["Jueves"].horaInicio} hs
-                              </Typography>
-                              <Typography>
-                                Duracion:{" "}
-                                {diasReservaPeriodo["Jueves"].duracion} min
-                              </Typography>
-                            </>
-                          )}
-                        </>
-                        <>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                onChange={(event) =>
-                                  handleCheckboxChange(event, "Viernes")
-                                }
-                              />
-                            }
-                            label="Viernes"
-                          />
-                          {diasReservaPeriodo["Viernes"] && (
-                            <>
-                              <Typography>
-                                Horario:{" "}
-                                {diasReservaPeriodo["Viernes"].horaInicio} hs
-                              </Typography>
-                              <Typography>
-                                Duracion:{" "}
-                                {diasReservaPeriodo["Viernes"].duracion} min
-                              </Typography>
-                            </>
-                          )}
-                        </>
+                              {reserva && (
+                                <>
+                                  <Typography>
+                                    Horario: {reserva.horaInicio} hs
+                                  </Typography>
+                                  <Typography>
+                                    Duracion: {reserva.duracion} min
+                                  </Typography>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
                       </FormGroup>
                     </Box>
                   </>
@@ -460,37 +387,29 @@ export const RegistrarReservaPage = () => {
                       Dias seleccionados
                     </Typography>
                     <List>
-                      {Object.entries(diasReservaEsporadica).map(
-                        ([dia, reserva], index) => (
-                          <ListItem
-                            key={index}
-                            secondaryAction={
-                              <>
-                                <IconButton
-                                  edge="end"
-                                  aria-label="edit"
-                                  onClick={() => handleEdit(dia)}
-                                >
-                                  <Edit />
-                                </IconButton>
-                                <IconButton
-                                  edge="end"
-                                  aria-label="delete"
-                                  onClick={() => handleDelete(dia)}
-                                >
-                                  <Delete />
-                                </IconButton>
-                              </>
-                            }
+                      {diasReservaEsporadica.map((reserva, index) => (
+                        <ListItem key={index}>
+                          <Typography>
+                            {reserva.dia}: {reserva.horaInicio} hs,{" "}
+                            {reserva.duracion} min
+                          </Typography>
+                          <IconButton
+                            edge="end"
+                            aria-label="edit"
+                            onClick={() => handleEdit(reserva.dia)}
                           >
-                            <Typography>
-                              {dia}: {reserva.horaInicio} hs, {reserva.duracion}{" "}
-                              min
-                            </Typography>
-                          </ListItem>
-                        )
-                      )}
-                      {Object.keys(diasReservaEsporadica).length === 0 && (
+                            <Edit />
+                          </IconButton>
+                          <IconButton
+                            edge="end"
+                            aria-label="delete"
+                            onClick={() => handleDelete(reserva.dia)}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </ListItem>
+                      ))}
+                      {diasReservaEsporadica.length === 0 && (
                         <ListItem>
                           <Typography>No se han seleccionado dias</Typography>
                         </ListItem>
@@ -731,7 +650,7 @@ export const RegistrarReservaPage = () => {
                 backgroundColor: "#32936F",
               }}
             >
-              Registrar bedel
+              Registrar reserva
             </Button>
             <SuccessModal
               success={success}

@@ -36,8 +36,10 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Hora y duracion del {dia}</DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ textAlign: "center" }}>
+        Hora y duracion del {dia}
+      </DialogTitle>
       <DialogContent>
         <TextField
           type="time"
@@ -59,12 +61,36 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
           La duracion debe ser multiplo de 30.
         </Typography>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="secondary">
-          Cancel
+      <DialogActions sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+        <Button
+          variant="outlined"
+          size="medium"
+          sx={{
+            width: "180px",
+            color: "#32936F",
+            borderColor: "#32936F",
+            borderRadius: 3,
+            paddingY: 1,
+            marginBottom: 1,
+          }}
+          onClick={handleClose}
+        >
+          Cancelar
         </Button>
-        <Button onClick={handleAcceptClick} color="primary">
-          Accept
+        <Button
+          type="submit"
+          variant="contained"
+          size="medium"
+          sx={{
+            width: "180px",
+            backgroundColor: "#32936F",
+            borderRadius: 3,
+            paddingY: 1,
+            marginBottom: 1,
+          }}
+          onClick={handleAcceptClick}
+        >
+          Aceptar
         </Button>
       </DialogActions>
     </Dialog>
