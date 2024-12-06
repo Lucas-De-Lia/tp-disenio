@@ -71,6 +71,13 @@ export const RegistrarReservaPage = () => {
   const [error, setError] = useState(false);
   const [errorList, setErrorList] = useState(null);
   const [disabled, setDisabled] = useState(false);
+  const [duracionModalOpen, setDuracionModalOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState("");
+  const [esPeriodo, setEsPeriodo] = useState(false);
+  const [diasReserva, setDiasReserva] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [diasSemana, setDiasSemana] = useState({});
+  //const [horariosDisponibles, setHorariosDisponibles] = useState(undefined);
 
   const handleClose = () => {
     setSuccess(false);
@@ -87,6 +94,58 @@ export const RegistrarReservaPage = () => {
     navigate("/dashboard");
   };
 
+  const generarReservasPeriodo = (day, hour, duration) => {
+    const startDate =
+      periodoReserva === "cuatrimestre1"
+        ? new Date("2023-03-01")
+        : new Date("2023-08-01");
+    //get fechas de inicio y fin del periodo
+    const endDate =
+      periodoReserva === "cuatrimestre1"
+        ? new Date("2023-06-30")
+        : new Date("2023-11-30");
+    const dayOfWeek = [
+      "Lunes",
+      "Martes",
+      "Miercoles",
+      "Jueves",
+      "Viernes",
+    ].indexOf(day);
+
+    let currentDate = new Date(startDate);
+    const newReservations = [];
+
+    while (currentDate <= endDate) {
+      if (currentDate.getDay() === dayOfWeek) {
+        newReservations.push({
+          dia: currentDate.toLocaleDateString("es-ES"),
+          horaInicio: hour,
+          duracion: duration,
+        });
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return newReservations;
+  };
+
+  const removerDiasPeriodo = (dia) => {
+    const dayOfWeek = [
+      "Lunes",
+      "Martes",
+      "Miercoles",
+      "Jueves",
+      "Viernes",
+    ].indexOf(dia);
+    setDiasReserva((prev) =>
+      prev.filter(
+        (reserva) =>
+          new Date(reserva.dia.split("/").reverse().join("-")).getDay() !==
+          dayOfWeek
+      )
+    );
+  };
+
   const handleModal = (state) => {
     setModal(state);
   };
@@ -94,13 +153,6 @@ export const RegistrarReservaPage = () => {
   const handleExit = () => {
     navigate("/dashboard");
   };
-
-  const [duracionModalOpen, setDuracionModalOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState("");
-  const [esPeriodo, setEsPeriodo] = useState(false);
-  const [diasReservaPeriodo, setDiasReservaPeriodo] = useState([]);
-  const [diasReservaEsporadica, setDiasReservaEsporadica] = useState([]);
-  const [options, setOptions] = useState([]);
 
   const handleModalOpen = (day) => {
     setSelectedDay(day);
@@ -112,33 +164,65 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleModalAccept = (hour, duration) => {
-    const newReserva = {
-      dia: selectedDay,
-      horaInicio: hour,
-      duracion: duration,
-    };
     if (esPeriodo) {
-      setDiasReservaPeriodo((prev) => [...prev, newReserva]);
+      setDiasSemana((prev) => ({
+        ...prev,
+        [selectedDay]: { horaInicio: hour, duracion: duration },
+      }));
+      const reservas = generarReservasPeriodo(selectedDay, hour, duration);
+      setDiasReserva((prev) => [...prev, ...reservas]);
     } else {
-      setDiasReservaEsporadica((prev) => [...prev, newReserva]);
+      const newReserva = {
+        dia: selectedDay,
+        horaInicio: hour,
+        duracion: duration,
+      };
+      setDiasReserva((prev) => {
+        const updatedReservations = [...prev];
+        const index = updatedReservations.findIndex(
+          (reserva) => reserva.dia === newReserva.dia
+        );
+
+        if (index !== -1) {
+          // Update existing reservation
+          updatedReservations[index] = newReserva;
+        } else {
+          // Add new reservation
+          updatedReservations.push(newReserva);
+        }
+
+        return updatedReservations;
+      });
     }
   };
 
   const handleCheckboxChange = (event, dia) => {
+    if (!periodoReserva) {
+      alert("Seleccione un periodo de reserva primero.");
+      return;
+    }
     setEsPeriodo(true);
     if (event.target.checked) {
       handleModalOpen(dia);
     } else {
-      setDiasReservaPeriodo((prev) =>
-        prev.filter((reserva) => reserva.dia !== dia)
-      );
+      removerDiasPeriodo(dia);
+      setDiasSemana((prev) => {
+        const updated = { ...prev };
+        delete updated[dia];
+        return updated;
+      });
     }
   };
 
   useEffect(() => {
-    console.log(diasReservaPeriodo);
-    console.log(diasReservaEsporadica);
-  }, [diasReservaEsporadica, diasReservaPeriodo]);
+    console.log(diasReserva);
+  }, [diasReserva]);
+
+  useEffect(() => {
+    setDiasReserva([]);
+    setDiasSemana({});
+    //setHorariosDisponibles(undefined);
+  }, [periodoReserva, tipoReserva]);
 
   const handleCalendarPick = (dia) => {
     setEsPeriodo(false);
@@ -151,9 +235,7 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleDelete = (dia) => {
-    setDiasReservaEsporadica((prev) =>
-      prev.filter((reserva) => reserva.dia !== dia)
-    );
+    setDiasReserva((prev) => prev.filter((reserva) => reserva.dia !== dia));
   };
 
   const handleConsulta = () => {
@@ -178,7 +260,34 @@ export const RegistrarReservaPage = () => {
     //recibe respuesta con disponibilidad de aulas
     //recibe el mismo objeto pero dentro de cada dia se agrega un booleano "disponible"
     console.log("logica consulta");
+    setDiasReserva((prev) => [
+      ...prev,
+      {
+        dia: "01/01/2023",
+        horaInicio: "10:00",
+        duracion: 60,
+        disponibilidad: false,
+        horariosDisponibles: ["10:00", "11:00", "12:00"],
+      },
+    ]);
   };
+
+  const handleDisponibilidad = () => {
+    const reservaConProblema = diasReserva.find(
+      (reserva) => reserva.disponibilidad === false
+    );
+    if (reservaConProblema) {
+      setSelectedDay(reservaConProblema.dia);
+      setEsPeriodo(false);
+      //setHorariosDisponibles(reservaConProblema.horariosDisponibles);
+      setDuracionModalOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    console.log(diasReserva);
+    handleDisponibilidad(); // Check for availability issues whenever reservas change
+  }, [diasReserva, handleDisponibilidad]);
 
   const handleSearchChange = async (event, value) => {
     try {
@@ -342,9 +451,7 @@ export const RegistrarReservaPage = () => {
                           "Jueves",
                           "Viernes",
                         ].map((dia) => {
-                          const reserva = diasReservaPeriodo.find(
-                            (reserva) => reserva.dia === dia
-                          );
+                          const reserva = diasSemana[dia];
                           return (
                             <div key={dia}>
                               <FormControlLabel
@@ -387,7 +494,7 @@ export const RegistrarReservaPage = () => {
                       Dias seleccionados
                     </Typography>
                     <List>
-                      {diasReservaEsporadica.map((reserva, index) => (
+                      {diasReserva.map((reserva, index) => (
                         <ListItem key={index}>
                           <Typography>
                             {reserva.dia}: {reserva.horaInicio} hs,{" "}
@@ -409,7 +516,7 @@ export const RegistrarReservaPage = () => {
                           </IconButton>
                         </ListItem>
                       ))}
-                      {diasReservaEsporadica.length === 0 && (
+                      {diasReserva.length === 0 && (
                         <ListItem>
                           <Typography>No se han seleccionado dias</Typography>
                         </ListItem>
@@ -437,11 +544,10 @@ export const RegistrarReservaPage = () => {
                         <StaticDatePicker
                           displayStaticWrapperAs="desktop"
                           openTo="day"
-                          //value={today}
+                          disablePast={true}
                           onChange={(date) =>
                             handleCalendarPick(date.format("DD/MM/YYYY"))
                           }
-                          //renderInput={(params) => <TextField {...params} />}
                         />
                       </LocalizationProvider>
                     </Box>
@@ -667,6 +773,7 @@ export const RegistrarReservaPage = () => {
         handleClose={handleModalClose}
         handleAccept={handleModalAccept}
         dia={selectedDay}
+        //horariosDisponibles={horariosDisponibles}
       />
     </form>
   );
