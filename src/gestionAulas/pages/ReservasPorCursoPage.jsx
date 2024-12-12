@@ -13,17 +13,13 @@ export const ReservasPorCursoPage = () => {
 
     const [buscador, setBuscador] = useState("");
 
-    const [anio, setAnio] = useState('');
-
     const [cancelarModal, setCancelarModal] = useState(false);
+
 
     const handleBuscador = (e) => {
         setBuscador(e.target.value);
     }
 
-    const handleAnio = (e) => {
-        setAnio(e.target.value);
-    }
 
     const handleCancelar = () => {
         setCancelarModal(!cancelarModal);
@@ -32,6 +28,30 @@ export const ReservasPorCursoPage = () => {
     const handleExit = () => {
         navigate('/dashboard');
     }
+
+    const handlePrint = () => {
+        const printWindow = window.open("", "_blank"); // Crear una nueva ventana o pestaña
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Impresión de Texto</title>
+              <style>
+                /* Estilos opcionales para el texto */
+                body {
+                  font-family: Arial, sans-serif;
+                  padding: 20px;
+                }
+              </style>
+            </head>
+            <body>
+              <p>${"hola"}</p> <!-- Incluir el texto plano -->
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print(); // Abrir el cuadro de impresión
+        printWindow.close(); // Cerrar la ventana después de imprimir
+      };
 
 
   return (
@@ -87,6 +107,7 @@ export const ReservasPorCursoPage = () => {
                         htmlFor ="buscador"
                         color="#5E6366"
                         ml={1}
+                        textAlign="center"
                     >
                         Cátedra,seminario o curso
                     </Typography>
@@ -106,42 +127,14 @@ export const ReservasPorCursoPage = () => {
                         }}
                     />
                     </Box>
-                    <Box
-                        display="flex"
-                        flexDirection="column"
-                        gap="2px"
-                        width="40%"
-                    >
-                        <Typography
-                        variant="caption"
-                        component="label"
-                        htmlFor ="anios"
-                        color="#5E6366"
-                        ml={1}
-                        >
-                        Año
-                        </Typography>
-                        <Select
-                                fullWidth
-                                id="anios"
-                                value={anio}
-                                onChange={handleAnio}
-                                MenuProps={{
-                                    disableScrollLock: true,
-                                }}
-                            >
-                                <MenuItem value = "2024">2024</MenuItem>
-                                <MenuItem value = "2023" >2023</MenuItem>
-                        </Select>
-                    </Box>
                 </Box>
                 <ReservasPorCursoTable buscador={buscador}/>
                 <Box
                         display="flex"
                         alignContent = "center"
                         justifyContent="center"
-                        mt={1}
-                    >
+                        gap={5}
+                >
                         <Button
                             variant="outlined"
                             size="medium"
@@ -151,9 +144,20 @@ export const ReservasPorCursoPage = () => {
                                 borderColor: "#32936F",
                             }}
                             onClick={handleCancelar}
-                    >
+                        >
                         Cancelar
-                    </Button>     
+                        </Button>
+                        <Button
+                            variant="contained"
+                            size="medium"
+                            sx={{
+                                width: "200px",
+                                backgroundColor: "#32936F",
+                            }}
+                            onClick={handlePrint}
+                        >
+                        Imprimir
+                        </Button>
                 </Box>
             </Box>
         </Box>
