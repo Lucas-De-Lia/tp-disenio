@@ -25,45 +25,34 @@ import { ErrorModal } from "../modals/ErrorModal";
 import { CancelModal } from "../modals/CancelModal";
 import { handleSubmit } from "../helpers";
 import DuracionModal from "../modals/DuracionModal";
-
-// type Dia = {
-//   horaInicio: string,
-//   duracion: number,
-// };
-
-// type DiasReserva = {
-//   "Lunes"?: Dia,
-//   "Martes"?: Dia,
-//   "Miercoles"?: Dia,
-//   "Jueves"?: Dia,
-//   "Viernes"?: Dia,
-// }
+import axios from "axios";
+import { listaDias } from "../../constants/dias";
 
 export const RegistrarReservaPage = () => {
   const navigate = useNavigate();
 
   const {
-    nombre,
-    apellido,
+    nombreDocente,
+    apellidoDocente,
     tipoReserva,
     username,
     cantidadAlumnos,
     tipoAula,
-    email,
+    correoDocente,
     periodoReserva,
-    search,
+    actividadAcademica,
     onInputChange,
     onResetForm,
   } = useForm({
-    nombre: "",
-    apellido: "",
+    nombreDocente: "",
+    apellidoDocente: "",
     tipoReserva: "",
     tipoAula: "",
     username: "",
     cantidadAlumnos: 0,
-    email: "",
+    correoDocente: "",
     periodoReserva: "",
-    search: "",
+    actividadAcademica: "",
   });
 
   const [modal, setModal] = useState(false);
@@ -94,23 +83,21 @@ export const RegistrarReservaPage = () => {
     navigate("/dashboard");
   };
 
-  const generarReservasPeriodo = (day, hour, duration) => {
+  const generarReservasPeriodo = async (day, hour, duration) => {
+    const response = await axios.get(
+      "http://localhost:8080/api/cuatrimestres/2025"
+    );
+
     const startDate =
       periodoReserva === "cuatrimestre1"
-        ? new Date("2023-03-01")
-        : new Date("2023-08-01");
-    //get fechas de inicio y fin del periodo
+        ? new Date(response.data[0].fechaInicio)
+        : new Date(response.data[1].fechaInicio);
+
     const endDate =
       periodoReserva === "cuatrimestre1"
-        ? new Date("2023-06-30")
-        : new Date("2023-11-30");
-    const dayOfWeek = [
-      "Lunes",
-      "Martes",
-      "Miercoles",
-      "Jueves",
-      "Viernes",
-    ].indexOf(day);
+        ? new Date(response.data[0].fechaFinal)
+        : new Date(response.data[1].fechaFinal);
+    const dayOfWeek = listaDias.indexOf(day);
 
     let currentDate = new Date(startDate);
     const newReservations = [];
@@ -118,7 +105,7 @@ export const RegistrarReservaPage = () => {
     while (currentDate <= endDate) {
       if (currentDate.getDay() === dayOfWeek) {
         newReservations.push({
-          dia: currentDate.toLocaleDateString("es-ES"),
+          fecha: currentDate.toISOString(),
           horaInicio: hour,
           duracion: duration,
         });
@@ -130,19 +117,9 @@ export const RegistrarReservaPage = () => {
   };
 
   const removerDiasPeriodo = (dia) => {
-    const dayOfWeek = [
-      "Lunes",
-      "Martes",
-      "Miercoles",
-      "Jueves",
-      "Viernes",
-    ].indexOf(dia);
+    const dayOfWeek = listaDias.indexOf(dia);
     setDiasReserva((prev) =>
-      prev.filter(
-        (reserva) =>
-          new Date(reserva.dia.split("/").reverse().join("-")).getDay() !==
-          dayOfWeek
-      )
+      prev.filter((reserva) => new Date(reserva.fecha).getDay() !== dayOfWeek)
     );
   };
 
@@ -163,24 +140,28 @@ export const RegistrarReservaPage = () => {
     setDuracionModalOpen(false);
   };
 
-  const handleModalAccept = (hour, duration) => {
+  const handleModalAccept = async (hour, duration) => {
     if (esPeriodo) {
       setDiasSemana((prev) => ({
         ...prev,
         [selectedDay]: { horaInicio: hour, duracion: duration },
       }));
-      const reservas = generarReservasPeriodo(selectedDay, hour, duration);
+      const reservas = await generarReservasPeriodo(
+        selectedDay,
+        hour,
+        duration
+      );
       setDiasReserva((prev) => [...prev, ...reservas]);
     } else {
       const newReserva = {
-        dia: selectedDay,
+        fecha: selectedDay,
         horaInicio: hour,
         duracion: duration,
       };
       setDiasReserva((prev) => {
         const updatedReservations = [...prev];
         const index = updatedReservations.findIndex(
-          (reserva) => reserva.dia === newReserva.dia
+          (reserva) => reserva.fecha === newReserva.fecha
         );
 
         if (index !== -1) {
@@ -235,41 +216,22 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleDelete = (dia) => {
-    setDiasReserva((prev) => prev.filter((reserva) => reserva.dia !== dia));
+    setDiasReserva((prev) => prev.filter((reserva) => reserva.fecha !== dia));
   };
 
-  const handleConsulta = () => {
-    //envia objeto data:
-    // {
-    //   tipoReserva: string,
-    //   periodoReserva: string, // solo si es periodo
-    //   diasReservaPeriodo: {
-    //    dia: string, ("lunes", "martes", "miercoles", "jueves", "viernes")
-    //    horaInicio: string,
-    //    duracion: number,
-    //   }[],  // solo si es periodo
-    //   diasReservaEsporadica: {
-    //    dia: string, (fecha en formato "DD/MM/YYYY")
-    //    horaInicio: string,
-    //    duracion: number,
-    //   }[],  // solo si es esporadica
-    //   cantidadAlumnos: cantidadAlumnos,
-    //   tipoAula: tipoAula,
-    //  }
+  const handleConsulta = async () => {
+    const data = {
+      tipoAula: tipoAula,
+      capacidad: Number(cantidadAlumnos),
+      diasReserva: diasReserva,
+    };
+    const response = await axios.post(
+      "http://localhost:8080/api/aulas/disponibilidad",
+      data
+    );
 
-    //recibe respuesta con disponibilidad de aulas
-    //recibe el mismo objeto pero dentro de cada dia se agrega un booleano "disponible"
-    console.log("logica consulta");
-    setDiasReserva((prev) => [
-      ...prev,
-      {
-        dia: "01/01/2023",
-        horaInicio: "10:00",
-        duracion: 60,
-        disponibilidad: false,
-        horariosDisponibles: ["10:00", "11:00", "12:00"],
-      },
-    ]);
+    const filterResponse = response.data.filter((reserva) => {...reserva, nroAula: reserva.aulasDisponibles[0].nroAula});
+    setDiasReserva(response.data);
   };
 
   const handleDisponibilidad = () => {
@@ -277,7 +239,7 @@ export const RegistrarReservaPage = () => {
       (reserva) => reserva.disponibilidad === false
     );
     if (reservaConProblema) {
-      setSelectedDay(reservaConProblema.dia);
+      setSelectedDay(reservaConProblema.fecha);
       setEsPeriodo(false);
       //setHorariosDisponibles(reservaConProblema.horariosDisponibles);
       setDuracionModalOpen(true);
@@ -303,6 +265,21 @@ export const RegistrarReservaPage = () => {
     }
   };
 
+  const handleSubmitForm = async (e) => {
+e.preventDefault();
+const data = {
+  tipoReserva,
+  cantidadAlumnos,
+  apellidoDocente,
+  nombreDocente,
+  correoDocente,
+  actividadAcademica,
+  realizadaPor: JSON.parse(localStorage.getItem("user")).user,
+  
+}
+
+  }
+
   return (
     <form
       onSubmit={(e) => {
@@ -310,8 +287,8 @@ export const RegistrarReservaPage = () => {
           e,
           {
             username,
-            nombre,
-            apellido,
+            nombreDocente,
+            apellidoDocente,
             tipoReserva,
           },
           { setSuccess, setError, setErrorList, setDisabled }
@@ -395,8 +372,8 @@ export const RegistrarReservaPage = () => {
                     disableScrollLock: true, // Evita bloquear el desplazamiento del body
                   }}
                 >
-                  <MenuItem value={"periodo"}>Por periodo</MenuItem>
-                  <MenuItem value={"esporadica"}>Esporadica</MenuItem>
+                  <MenuItem value={"POR_PERIODO"}>Por periodo</MenuItem>
+                  <MenuItem value={"ESPORADICA"}>Esporadica</MenuItem>
                 </Select>
                 {tipoReserva === "periodo" && (
                   <>
@@ -444,13 +421,7 @@ export const RegistrarReservaPage = () => {
                         Seleccionar dias a reservar
                       </Typography>
                       <FormGroup>
-                        {[
-                          "Lunes",
-                          "Martes",
-                          "Miercoles",
-                          "Jueves",
-                          "Viernes",
-                        ].map((dia) => {
+                        {listaDias.map((dia) => {
                           const reserva = diasSemana[dia];
                           return (
                             <div key={dia}>
@@ -497,20 +468,20 @@ export const RegistrarReservaPage = () => {
                       {diasReserva.map((reserva, index) => (
                         <ListItem key={index}>
                           <Typography>
-                            {reserva.dia}: {reserva.horaInicio} hs,{" "}
+                            {reserva.fecha}: {reserva.horaInicio} hs,{" "}
                             {reserva.duracion} min
                           </Typography>
                           <IconButton
                             edge="end"
                             aria-label="edit"
-                            onClick={() => handleEdit(reserva.dia)}
+                            onClick={() => handleEdit(reserva.fecha)}
                           >
                             <Edit />
                           </IconButton>
                           <IconButton
                             edge="end"
                             aria-label="delete"
-                            onClick={() => handleDelete(reserva.dia)}
+                            onClick={() => handleDelete(reserva.fecha)}
                           >
                             <Delete />
                           </IconButton>
@@ -546,7 +517,7 @@ export const RegistrarReservaPage = () => {
                           openTo="day"
                           disablePast={true}
                           onChange={(date) =>
-                            handleCalendarPick(date.format("DD/MM/YYYY"))
+                            handleCalendarPick(date.toISOString())
                           }
                         />
                       </LocalizationProvider>
@@ -567,7 +538,14 @@ export const RegistrarReservaPage = () => {
                   name="cantidadAlumnos"
                   id="cantidadAlumnos"
                   value={cantidadAlumnos}
-                  onChange={onInputChange}
+                  onChange={(e) =>
+                    onInputChange({
+                      target: {
+                        name: "cantidadAlumnos",
+                        value: Number(e.target.value),
+                      },
+                    })
+                  }
                   type="number"
                   slotProps={{ htmlInput: { min: 1 } }}
                 />
@@ -589,11 +567,11 @@ export const RegistrarReservaPage = () => {
                     disableScrollLock: true, // Evita bloquear el desplazamiento del body
                   }}
                 >
-                  <MenuItem value={"aulaMultimedios"}>
-                    Aula Multimedios
+                  <MenuItem value={"MULTIMEDIOS"}>Aula Multimedios</MenuItem>
+                  <MenuItem value={"INFORMATICA"}>Aula Informatica</MenuItem>
+                  <MenuItem value={"SIN_RECURSOS_ADICIONALES"}>
+                    Aula Regular
                   </MenuItem>
-                  <MenuItem value={"aulaInfomatica"}>Aula Informatica</MenuItem>
-                  <MenuItem value={"aulaRegular"}>Aula Regular</MenuItem>
                 </Select>
                 <Button
                   variant="outlined"
@@ -606,7 +584,7 @@ export const RegistrarReservaPage = () => {
                     paddingY: 1.5,
                     borderRadius: 3,
                   }}
-                  onClick={() => handleConsulta()}
+                  onClick={async () => await handleConsulta()}
                 >
                   Consultar disponibilidad
                 </Button>
@@ -631,18 +609,18 @@ export const RegistrarReservaPage = () => {
                   Informacion del solicitante
                 </Typography>
                 <TextField
-                  name="nombre"
-                  id="nombre"
-                  value={nombre}
+                  name="nombreDocente"
+                  id="nombreDocente"
+                  value={nombreDocente}
                   onChange={onInputChange}
                   placeholder="Nombre"
                   sx={{ marginTop: 6, marginLeft: 1 }}
                 />
                 <TextField
-                  name="apellido"
-                  id="apellido"
+                  name="apellidoDocente"
+                  id="apellidoDocente"
                   sx={{ marginTop: 4, marginLeft: 1 }}
-                  value={apellido}
+                  value={apellidoDocente}
                   onChange={onInputChange}
                   placeholder="Apellido"
                 />
@@ -653,15 +631,15 @@ export const RegistrarReservaPage = () => {
                   onInputChange={handleSearchChange}
                   onChange={(event, newValue) => {
                     onInputChange({
-                      target: { name: "search", value: newValue },
+                      target: { name: "actividadAcademica", value: newValue },
                     });
                   }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      name="search"
-                      id="search"
-                      value={search}
+                      name="actividadAcademica"
+                      id="actividadAcademica"
+                      value={actividadAcademica}
                       onChange={onInputChange}
                       placeholder="Buscar"
                       sx={{ marginTop: 4, marginLeft: 1 }}
@@ -670,10 +648,10 @@ export const RegistrarReservaPage = () => {
                 />
 
                 <TextField
-                  name="email"
-                  id="email"
+                  name="correoDocente"
+                  id="correoDocente"
                   type="text"
-                  value={email}
+                  value={correoDocente}
                   onChange={onInputChange}
                   sx={{ marginTop: 4, marginLeft: 1 }}
                   placeholder="Correo electronico de contacto"
