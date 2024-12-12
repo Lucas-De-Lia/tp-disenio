@@ -1,0 +1,5 @@
+@media print {
+    .MuiTableContainer-root{
+      background-color: aqua;
+    }
+}

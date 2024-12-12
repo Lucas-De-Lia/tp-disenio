@@ -11,11 +11,12 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import axios from "axios"
 import { Header } from "../../components";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ReservasPorFechaTable } from "../components/ReservasPorFechaTable";
 import { CancelModal } from "../modals/CancelModal";
 import { ErrorModalGeneral } from "../modals/ErrorModalGeneral";
 import { useNavigate } from "react-router-dom";
+import printCSS from '../components/styles/printReservasPorFechaTable.css'; // Importar el archivo CSS para impresión
 
 export const ReservasPorFechaPage = () => {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ export const ReservasPorFechaPage = () => {
   
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const tableRef = useRef();
 
   const handleFecha = (newValue) => {
     setFecha(newValue);
@@ -45,6 +48,34 @@ export const ReservasPorFechaPage = () => {
   const handleCancelar = () => {
     setCancelarModal(!cancelarModal);
   };
+
+    const handleImprimir = () => {
+        if (!fecha) {
+            setError(true);
+            setErrorMessage("Debe seleccionar una fecha para imprimir las reservas");
+            return;
+        }
+        
+        const printContent = tableRef.current;
+        const WinPrint = window.open('', '', 'width=900,height=650');
+        WinPrint.document.write(`
+        <html>
+            <head>
+            <title>Listado de Reservas para el día ${new Date(fecha).toLocaleDateString()}</title>
+            <link rel="stylesheet" type="text/css" href="styles/print.css">
+            <style>
+                ${printCSS}
+            </style>
+            </head>
+            <body>
+            ${printContent.outerHTML}
+            </body>
+        </html>
+        `);
+        WinPrint.document.close();
+        WinPrint.focus();
+        WinPrint.print();
+    };
 
   const handleErrorModal = (state) => {
     setError(state);
@@ -185,12 +216,14 @@ export const ReservasPorFechaPage = () => {
             numeroAula={numeroAula}
             setError={setError}
             setErrorMessage={setErrorMessage}
+            ref={tableRef}
           />
           <Box
             display="flex"
             alignContent="center"
             justifyContent="center"
             mt={1}
+            gap={5}
           >
             <Button
               variant="outlined"
@@ -203,6 +236,17 @@ export const ReservasPorFechaPage = () => {
               onClick={handleCancelar}
             >
               Cancelar
+            </Button>
+            <Button
+              variant="contained"
+              size="medium"
+              sx={{
+                width: "200px",
+                backgroundColor: "#32936F",
+              }}
+              onClick={handleImprimir}
+            >
+              Imprimir
             </Button>
           </Box>
         </Box>
