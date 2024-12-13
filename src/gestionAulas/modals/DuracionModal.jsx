@@ -1,4 +1,4 @@
-import { /* useEffect, */ useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import {
   Dialog,
@@ -8,8 +8,6 @@ import {
   Button,
   TextField,
   Typography,
-  //Select,
-  //MenuItem,
 } from "@mui/material";
 import { listaDias } from "../../constants/dias";
 
@@ -17,15 +15,11 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
   const [hour, setHour] = useState("");
   const [duration, setDuration] = useState("");
   const [durationError, setDurationError] = useState(false);
-
-  // useEffect(() => {
-  //   if (horariosDisponibles && horariosDisponibles.length > 0) {
-  //     setHour(horariosDisponibles[0]);
-  //   }
-  // }, [horariosDisponibles]);
+  const [hourError, setHourError] = useState(false);
 
   const handleHourChange = (e) => {
     setHour(e.target.value + ":00");
+    setHourError(false);
   };
 
   const handleDurationChange = (e) => {
@@ -33,11 +27,15 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
     setDuration(value);
   };
 
-  const handleAcceptClick = () => {
+  const handleAcceptClick = async () => {
     const value = Number(duration);
+    if (!hour) {
+      setHourError(true);
+      return;
+    }
     if (value === "" || (value % 30 === 0 && value > 0)) {
       setDurationError(false);
-      handleAccept(hour, duration);
+      await handleAccept(hour, duration);
       handleClose();
     } else {
       setDurationError(true);
@@ -50,43 +48,15 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
         Hora y duracion del {listaDias.includes(dia) ? dia : dia.slice(0, 10)}
       </DialogTitle>
       <DialogContent>
-        {/* {horariosDisponibles && horariosDisponibles.length > 0 ? (
-          <Select
-            value={hour}
-            onChange={handleHourChange}
-            fullWidth
-            margin="normal"
-          >
-            {horariosDisponibles.map((horario, index) => (
-              <MenuItem key={index} value={horario}>
-                {horario}
-              </MenuItem>
-            ))}
-          </Select>
-        ) : (
-          <> */}
         <TextField
           type="time"
           value={hour}
           onChange={handleHourChange}
           fullWidth
           margin="normal"
+          error={hourError}
+          helperText={hourError ? "Campo obligatorio" : ""}
         />
-        {/* {horariosDisponibles && horariosDisponibles.length === 0 && (
-              <>
-                <Typography variant="caption" color="textSecondary">
-                  No hay horarios disponibles en este dia.
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{ marginTop: 1 }}
-                  onClick={handleDelete}
-                >
-                  Eliminar
-                </Button>
-              </>
-            )} */}
         <TextField
           label="Duracion en minutos"
           type="number"
@@ -95,13 +65,10 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
           fullWidth
           margin="normal"
           error={durationError}
-          //disabled={horariosDisponibles && horariosDisponibles.length > 0}
         />
         <Typography variant="caption" color="textSecondary">
           La duracion debe ser multiplo de 30.
         </Typography>
-        {/* </>
-        )} */}
       </DialogContent>
       <DialogActions sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
         <Button
