@@ -76,12 +76,14 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
                 control={<Radio sx={{ color: "#1976d2" }} />}
                 label={
                   <div style={{ marginLeft: "8px" }}>
-                    <Typography
-                      variant="body1"
-                      sx={{ fontWeight: "bold", marginBottom: "4px" }}
-                    >
-                      {reserva.diaSemana ?? reserva.fecha.slice(0, 10)}
-                    </Typography>
+                    {reserva.fecha && (
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", marginBottom: "4px" }}
+                      >
+                        {reserva.fecha.slice(0, 10)}
+                      </Typography>
+                    )}
                     <Typography variant="body2" sx={{ marginBottom: "2px" }}>
                       Horario: {reserva.horaInicio} -{" "}
                       {calculateHoraFin(reserva.horaInicio, reserva.duracion)}{" "}

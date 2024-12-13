@@ -72,6 +72,11 @@ export const RegistrarReservaPage = () => {
     return new Date(date).toISOString().split("T")[0];
   };
 
+  const mayus = (word) => {
+    if (!word) return "";
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  };
+
   const handleClose = () => {
     setSuccess(false);
     setErrorList(null);
@@ -115,7 +120,9 @@ export const RegistrarReservaPage = () => {
       periodoReserva === "PRIMER_CUATRIMESTRE"
         ? new Date(response.data[0].fechaFinal)
         : new Date(response.data[1].fechaFinal);
-    const dayOfWeek = listaDias.indexOf(day);
+
+    // Adjust the dayOfWeek calculation to match the listaDias array
+    const dayOfWeek = (listaDias.indexOf(day) + 1) % 7;
 
     let currentDate = new Date(startDate);
     const newReservations = [];
@@ -232,30 +239,47 @@ export const RegistrarReservaPage = () => {
   };
 
   const aulasRepetidas = (reservas) => {
-    const aulaCount = reservas.reduce((acc, reserva) => {
-      reserva.aulasDisponibles.forEach((aula) => {
-        acc[aula.nroAula] = (acc[aula.nroAula] || 0) + 1;
-      });
+    console.log("reservas2", reservas);
+    const aulas = reservas.flatMap((reserva) => reserva.aulasDisponibles || []);
+    console.log("aulas", aulas);
+
+    const aulaCount = aulas.reduce((acc, aula) => {
+      acc[aula.nroAula] = (acc[aula.nroAula] || 0) + 1;
       return acc;
     }, {});
 
-    return Object.entries(aulaCount)
+    const sortedAulas = Object.entries(aulaCount)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
-      .map(([nroAula]) => Number(nroAula));
+      .map(([nroAula]) =>
+        aulas.find((aula) => aula.nroAula === Number(nroAula))
+      );
+
+    console.log("sortedAulas", sortedAulas);
+    return sortedAulas;
   };
 
   const filtrarAulas = (reservas) => {
+    console.log("reservas", reservas);
     const updatedReservasDiasSemana = reservasDiasSemana.map((reserva) => {
-      const filteredReservas = reservas.filter(
-        (r) => new Date(r.fecha).getDay() === reserva.diaSemana.toUpperCase()
-      );
-      const mostRepeatedAulas = aulasRepetidas(filteredReservas);
+      const filteredReservas = reservas.filter((r) => {
+        const diaSemana = new Date(r.fecha).getDay();
+        console.log(
+          diaSemana,
+          reserva.diaSemana,
+          listaDias.indexOf(reserva.diaSemana)
+        );
+        return diaSemana === listaDias.indexOf(reserva.diaSemana);
+      });
+      console.log("filteredReservas", filteredReservas);
+      const firstThreeAulas = aulasRepetidas(filteredReservas);
       return {
         ...reserva,
-        aulasDisponibles: mostRepeatedAulas,
+        aulasDisponibles: firstThreeAulas,
       };
     });
+
+    console.log("updated", updatedReservasDiasSemana);
 
     setReservasDiasSemana(updatedReservasDiasSemana);
   };
@@ -359,9 +383,12 @@ export const RegistrarReservaPage = () => {
       fecha: formatDate(reserva.fecha),
     }));
 
+    console.log("forma", formattedResponse);
+
     if (esPeriodo) {
       console.log(response.data);
       filtrarAulas(formattedResponse);
+
       //setReservasDiasSemana(formattedResponse);
     } else {
       setReservasDia(formattedResponse);
@@ -372,7 +399,6 @@ export const RegistrarReservaPage = () => {
     const reservas = esPeriodo ? reservasDiasSemana : reservasDia;
     const reservaSinAula = reservas.find(
       (reserva) =>
-        !esPeriodo &&
         !reserva.nroAula &&
         (reserva.aulasDisponibles || reserva.reservasSolapadas)
     );
@@ -415,10 +441,7 @@ export const RegistrarReservaPage = () => {
         ...commonData,
         anioCicloLectivo: "2025",
         periodoReserva,
-        reservasDiasSemana: reservasDiasSemana.map((reserva) => ({
-          ...reserva,
-          fecha: formatDate(reserva.fecha), // Format fecha to ISO string
-        })),
+        reservasDiasSemana,
       };
     } else if (tipoReserva === "ESPORADICA") {
       data = {
@@ -586,7 +609,7 @@ export const RegistrarReservaPage = () => {
                                     }
                                   />
                                 }
-                                label={dia}
+                                label={mayus(dia)}
                               />
                               {reserva && (
                                 <>
