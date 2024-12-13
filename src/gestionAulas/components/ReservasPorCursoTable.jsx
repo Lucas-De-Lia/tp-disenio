@@ -71,7 +71,7 @@ export const ReservasPorCursoTable = ({buscador,print,handlePrint}) => {
     <>
         {
             (reservas.length === 0 && sinResultados && buscador.length >0) 
-            ?<NoReservas/>
+            ?<NoReservas message="No se han encontrado reservas para la catedra selecccionada."/>
             :
             <TableContainer
             sx={{
