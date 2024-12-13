@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@mui/material";
 import { BuscarBedelTableFooter } from "./BuscarBedelTableFooter";
+import { NoReservas } from './NoReservas';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
@@ -113,175 +114,184 @@ const ReservasPorFechaTable = forwardRef(
     ];
 
     return (
-      <TableContainer
-        ref={ref}
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "nowrap",
-          width: "700px",
-          height: "500px",
-          mt: 2,
-          mb: 0,
-          borderBottom: "3px solid #5f5f5f",
+      <>
+        {
+          // Mostramos el componente NoReservas si no hay reservas para mostrar
+        ( fecha !== undefined && fecha !== null
+          && reservas["MULTIMEDIOS"] === undefined && reservas["INFORMATICA"] === undefined && reservas["SIN_RECURSOS_ADICIONALES"] === undefined) 
+        ? <NoReservas/>
+        :
+        <TableContainer
+          ref={ref}
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "nowrap",
+            width: "700px",
+            height: "500px",
+            mt: 2,
+            mb: 0,
+            borderBottom: "3px solid #5f5f5f",
 
-          "& td": {
-            border: "none",
-            padding: 0,
-          },
-        }}
-      >
-        {aulaTypes.map(
-          (tipo) =>
-            reservas[tipo] && (
-              <Box
-                key={tipo}
-                sx={{
-                  flexGrow: 1,
-                  flexShrink: 1,
-                  flexBasis: "33%",
-                  minWidth: "33%",
-                  maxWidth: "100%",
-                }}
-              >
-                <Table>
-                  <TableHead
-                    sx={{
-                      borderBottom: "3px solid #5f5f5f",
-                    }}
-                  >
-                    <TableRow>
-                      <TableCell sx={{ textAlign: "center" }}>
-                        {tipo === "MULTIMEDIOS" &&
-                          reservas[tipo] &&
-                          "Aula Multimedios"}
-                        {tipo === "INFORMATICA" &&
-                          reservas[tipo] &&
-                          "Aula Informática"}
-                        {tipo === "SIN_RECURSOS_ADICIONALES" &&
-                          reservas[tipo] &&
-                          "Aula sin Recursos Adicionales"}
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody
-                    sx={
-                      tipoAula !== "TODAS"
-                        ? {
-                            display: "flex",
-                            flexWrap: "wrap",
-                          }
-                        : {}
-                    }
-                  >
-                    {reservas[tipo] &&
-                      Object.keys(reservas[tipo]).map((nroAula) => (
-                        <React.Fragment key={`${tipo}${nroAula}`}>
-                          <TableRow
-                            sx={
-                              tipoAula !== "TODAS"
-                                ? {
-                                    width: "100%",
-                                    borderTop: "2px solid #d3d3d3",
-                                  }
-                                : {}
+            "& td": {
+              border: "none",
+              padding: 0,
+            },
+          }}
+        >
+          {aulaTypes.map(
+            (tipo) =>
+              reservas[tipo] && (
+                <Box
+                  key={tipo}
+                  sx={{
+                    flexGrow: 1,
+                    flexShrink: 1,
+                    flexBasis: "33%",
+                    minWidth: "33%",
+                    maxWidth: "100%",
+                  }}
+                >
+                  <Table>
+                    <TableHead
+                      sx={{
+                        borderBottom: "3px solid #5f5f5f",
+                      }}
+                    >
+                      <TableRow>
+                        <TableCell sx={{ textAlign: "center" }}>
+                          {tipo === "MULTIMEDIOS" &&
+                            reservas[tipo] &&
+                            "Aula Multimedios"}
+                          {tipo === "INFORMATICA" &&
+                            reservas[tipo] &&
+                            "Aula Informática"}
+                          {tipo === "SIN_RECURSOS_ADICIONALES" &&
+                            reservas[tipo] &&
+                            "Aula sin Recursos Adicionales"}
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody
+                      sx={
+                        tipoAula !== "TODAS"
+                          ? {
+                              display: "flex",
+                              flexWrap: "wrap",
                             }
-                          >
-                            <TableCell>
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight="bold"
-                                sx={{
-                                  paddingTop: "10px",
-                                  marginX: "7.5px",
-                                }}
-                              >
-                                Aula {nroAula}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                          {reservas[tipo][nroAula].map((reserva, index) => (
-                            <TableRow key={index}>
+                          : {}
+                      }
+                    >
+                      {reservas[tipo] &&
+                        Object.keys(reservas[tipo]).map((nroAula) => (
+                          <React.Fragment key={`${tipo}${nroAula}`}>
+                            <TableRow
+                              sx={
+                                tipoAula !== "TODAS"
+                                  ? {
+                                      width: "100%",
+                                      borderTop: "2px solid #d3d3d3",
+                                    }
+                                  : {}
+                              }
+                            >
                               <TableCell>
-                                <Box
-                                  sx={
-                                    tipoAula !== "TODAS"
-                                      ? {
-                                          paddingX: "20px",
-                                          paddingY: "20px",
-                                        }
-                                      : {
-                                          borderBottom: "2px solid #d3d3d3",
-                                          marginX: "7.5px",
-                                          paddingX: "20px",
-                                          paddingY: "20px",
-                                        }
-                                  }
+                                <Typography
+                                  variant="subtitle1"
+                                  fontWeight="bold"
+                                  sx={{
+                                    paddingTop: "10px",
+                                    marginX: "7.5px",
+                                  }}
                                 >
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    <Typography variant="body2">
-                                      Hora Inicio:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                      {reserva.horaInicio}
-                                    </Typography>
-                                  </Box>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    <Typography variant="body2">
-                                      Hora Fin:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                      {reserva.horaFin}
-                                    </Typography>
-                                  </Box>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    <Typography variant="body2">
-                                      Actividad:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                      {reserva.actividadAcademica}
-                                    </Typography>
-                                  </Box>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    <Typography variant="body2">
-                                      Docente:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                      {reserva.docente}
-                                    </Typography>
-                                  </Box>
-                                </Box>
+                                  Aula {nroAula}
+                                </Typography>
                               </TableCell>
                             </TableRow>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                  </TableBody>
-                </Table>
-              </Box>
-            )
-        )}
-      </TableContainer>
+                            {reservas[tipo][nroAula].map((reserva, index) => (
+                              <TableRow key={index}>
+                                <TableCell>
+                                  <Box
+                                    sx={
+                                      tipoAula !== "TODAS"
+                                        ? {
+                                            paddingX: "20px",
+                                            paddingY: "20px",
+                                          }
+                                        : {
+                                            borderBottom: "2px solid #d3d3d3",
+                                            marginX: "7.5px",
+                                            paddingX: "20px",
+                                            paddingY: "20px",
+                                          }
+                                    }
+                                  >
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <Typography variant="body2">
+                                        Hora Inicio:
+                                      </Typography>
+                                      <Typography variant="body2">
+                                        {reserva.horaInicio}
+                                      </Typography>
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <Typography variant="body2">
+                                        Hora Fin:
+                                      </Typography>
+                                      <Typography variant="body2">
+                                        {reserva.horaFin}
+                                      </Typography>
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <Typography variant="body2">
+                                        Actividad:
+                                      </Typography>
+                                      <Typography variant="body2">
+                                        {reserva.actividadAcademica}
+                                      </Typography>
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <Typography variant="body2">
+                                        Docente:
+                                      </Typography>
+                                      <Typography variant="body2">
+                                        {reserva.docente}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              )
+          )}
+        </TableContainer>
+      }
+      </>
     );
   }
 );

@@ -2,7 +2,7 @@ import { ErrorOutline } from '@mui/icons-material'
 import { Box, Typography } from '@mui/material'
 import React from 'react'
 
-export const NoReservas = () => {
+export const NoReservas = ({message}) => {
   return (
     <Box
         display="flex"
@@ -27,9 +27,9 @@ export const NoReservas = () => {
                 borderRadius:5,
             }}
             textAlign="center"
+            maxWidth={500}
         >
-            No se han encontrado reservas para la catedra <br/>
-            selecccionada.
+            {message || "No se han encontrado reservas que cumplan con los criterios ingresados."}
         </Typography>
     </Box>
   )
