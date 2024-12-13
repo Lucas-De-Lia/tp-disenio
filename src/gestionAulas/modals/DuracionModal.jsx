@@ -13,14 +13,7 @@ import {
 } from "@mui/material";
 import { listaDias } from "../../constants/dias";
 
-const DuracionModal = ({
-  open,
-  handleClose,
-  handleAccept,
-  //handleDelete,
-  dia,
-  //horariosDisponibles,
-}) => {
+const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
   const [hour, setHour] = useState("");
   const [duration, setDuration] = useState("");
   const [durationError, setDurationError] = useState(false);
@@ -54,8 +47,7 @@ const DuracionModal = ({
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ textAlign: "center" }}>
-        Hora y duracion del{" "}
-        {listaDias.includes(dia) ? dia : new Date(dia).toLocaleDateString()}
+        Hora y duracion del {listaDias.includes(dia) ? dia : dia.slice(0, 10)}
       </DialogTitle>
       <DialogContent>
         {/* {horariosDisponibles && horariosDisponibles.length > 0 ? (
@@ -150,6 +142,7 @@ DuracionModal.propTypes = {
   open: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   handleAccept: PropTypes.func.isRequired,
+  dia: PropTypes.string.isRequired,
 };
 
 export default DuracionModal;

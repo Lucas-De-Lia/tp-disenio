@@ -20,13 +20,13 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "../../hooks/useForm";
-import { SuccessModal } from "../modals/SuccessModal";
+import { SuccessModal } from "../modals/SuccessModalReserva";
 import { ErrorModal } from "../modals/ErrorModal";
 import { CancelModal } from "../modals/CancelModal";
-import { handleSubmit } from "../helpers";
 import DuracionModal from "../modals/DuracionModal";
 import axios from "axios";
 import { listaDias } from "../../constants/dias";
+import AulaSelectionModal from "./AulasDisponibles";
 
 export const RegistrarReservaPage = () => {
   const navigate = useNavigate();
@@ -35,7 +35,6 @@ export const RegistrarReservaPage = () => {
     nombreDocente,
     apellidoDocente,
     tipoReserva,
-    username,
     cantidadAlumnos,
     tipoAula,
     correoDocente,
@@ -48,7 +47,6 @@ export const RegistrarReservaPage = () => {
     apellidoDocente: "",
     tipoReserva: "",
     tipoAula: "",
-    username: "",
     cantidadAlumnos: 0,
     correoDocente: "",
     periodoReserva: "",
@@ -65,8 +63,10 @@ export const RegistrarReservaPage = () => {
   const [esPeriodo, setEsPeriodo] = useState(false);
   const [diasReserva, setDiasReserva] = useState([]);
   const [options, setOptions] = useState([]);
-  const [diasSemana, setDiasSemana] = useState({});
-  //const [horariosDisponibles, setHorariosDisponibles] = useState(undefined);
+  const [reservasDiasSemana, setReservasDiasSemana] = useState([]);
+  const [reservasDia, setReservasDia] = useState([]);
+  const [aulaModalOpen, setAulaModalOpen] = useState(false);
+  const [currentReservation, setCurrentReservation] = useState();
 
   const handleClose = () => {
     setSuccess(false);
@@ -83,18 +83,32 @@ export const RegistrarReservaPage = () => {
     navigate("/dashboard");
   };
 
-  const generarReservasPeriodo = async (day, hour, duration) => {
+  useEffect(
+    () => {
+      if (tipoReserva === "POR_PERIODO") {
+        setReservasDia([]);
+      } else if (tipoReserva === "ESPORADICA") {
+        const missing = reservasDia.some((reserva) => !reserva.nroAula);
+        setDisabled(missing);
+      }
+    },
+    reservasDia,
+    reservasDiasSemana,
+    tipoReserva
+  );
+
+  /* const generarReservasPeriodo = async (day, hour, duration) => {
     const response = await axios.get(
       "http://localhost:8080/api/cuatrimestres/2025"
     );
 
     const startDate =
-      periodoReserva === "cuatrimestre1"
+      periodoReserva === "PRIMER_CUATRIMESTRE"
         ? new Date(response.data[0].fechaInicio)
         : new Date(response.data[1].fechaInicio);
 
     const endDate =
-      periodoReserva === "cuatrimestre1"
+      periodoReserva === "PRIMER_CUATRIMESTRE"
         ? new Date(response.data[0].fechaFinal)
         : new Date(response.data[1].fechaFinal);
     const dayOfWeek = listaDias.indexOf(day);
@@ -114,7 +128,7 @@ export const RegistrarReservaPage = () => {
     }
 
     return newReservations;
-  };
+  }; */
 
   const removerDiasPeriodo = (dia) => {
     const dayOfWeek = listaDias.indexOf(dia);
@@ -140,25 +154,37 @@ export const RegistrarReservaPage = () => {
     setDuracionModalOpen(false);
   };
 
-  const handleModalAccept = async (hour, duration) => {
+  const handleModalAccept = (hour, duration) => {
     if (esPeriodo) {
-      setDiasSemana((prev) => ({
-        ...prev,
-        [selectedDay]: { horaInicio: hour, duracion: duration },
-      }));
-      const reservas = await generarReservasPeriodo(
-        selectedDay,
-        hour,
-        duration
-      );
-      setDiasReserva((prev) => [...prev, ...reservas]);
+      const newReserva = {
+        diaSemana: selectedDay.toUpperCase(),
+        horaInicio: hour,
+        duracion: duration,
+      };
+      setReservasDiasSemana((prev) => {
+        const updatedReservations = [...prev];
+        const index = updatedReservations.findIndex(
+          (reserva) => reserva.diaSemana === newReserva.diaSemana
+        );
+
+        if (index !== -1) {
+          // Update existing reservation
+          updatedReservations[index] = newReserva;
+        } else {
+          // Add new reservation
+          updatedReservations.push(newReserva);
+        }
+
+        return updatedReservations;
+      });
     } else {
       const newReserva = {
         fecha: selectedDay,
         horaInicio: hour,
         duracion: duration,
       };
-      setDiasReserva((prev) => {
+
+      setReservasDia((prev) => {
         const updatedReservations = [...prev];
         const index = updatedReservations.findIndex(
           (reserva) => reserva.fecha === newReserva.fecha
@@ -182,26 +208,28 @@ export const RegistrarReservaPage = () => {
       alert("Seleccione un periodo de reserva primero.");
       return;
     }
+
     setEsPeriodo(true);
     if (event.target.checked) {
+      setSelectedDay(dia);
       handleModalOpen(dia);
     } else {
-      removerDiasPeriodo(dia);
-      setDiasSemana((prev) => {
-        const updated = { ...prev };
-        delete updated[dia];
-        return updated;
-      });
+      setReservasDiasSemana((prev) =>
+        prev.filter((reserva) => reserva.diaSemana !== dia.toUpperCase())
+      );
     }
   };
 
   useEffect(() => {
     console.log(diasReserva);
-  }, [diasReserva]);
+    console.log(reservasDiasSemana);
+    console.log(reservasDia);
+  }, [diasReserva, reservasDia, reservasDiasSemana]);
 
   useEffect(() => {
     setDiasReserva([]);
-    setDiasSemana({});
+    setReservasDia([]);
+    setReservasDiasSemana([]);
     //setHorariosDisponibles(undefined);
   }, [periodoReserva, tipoReserva]);
 
@@ -210,46 +238,85 @@ export const RegistrarReservaPage = () => {
     handleModalOpen(dia);
   };
 
+  const handleAulaModalOpen = (reservation) => {
+    setCurrentReservation(reservation);
+    setAulaModalOpen(true);
+  };
+
+  const handleAulaModalClose = () => {
+    setAulaModalOpen(false);
+    setCurrentReservation(null);
+  };
+
+  const handleAulaAccept = (nroAula) => {
+    const updatedReservation = {
+      ...currentReservation,
+      nroAula: Number(nroAula),
+    };
+
+    if (esPeriodo) {
+      setReservasDiasSemana((prev) =>
+        prev.map((reserva) =>
+          reserva.diaSemana === currentReservation.diaSemana
+            ? updatedReservation
+            : reserva
+        )
+      );
+    } else {
+      setReservasDia((prev) =>
+        prev.map((reserva) =>
+          reserva.fecha === currentReservation.fecha
+            ? updatedReservation
+            : reserva
+        )
+      );
+    }
+
+    setAulaModalOpen(false);
+    setCurrentReservation(null);
+  };
+
   const handleEdit = (dia) => {
     setSelectedDay(dia);
     setDuracionModalOpen(true);
   };
 
   const handleDelete = (dia) => {
-    setDiasReserva((prev) => prev.filter((reserva) => reserva.fecha !== dia));
+    setReservasDia((prev) => prev.filter((reserva) => reserva.fecha !== dia));
   };
 
   const handleConsulta = async () => {
     const data = {
       tipoAula: tipoAula,
       capacidad: Number(cantidadAlumnos),
-      diasReserva: diasReserva,
+      diasReserva: esPeriodo ? reservasDiasSemana : reservasDia,
     };
     const response = await axios.post(
       "http://localhost:8080/api/aulas/disponibilidad",
       data
     );
 
-    const filterResponse = response.data.filter((reserva) => {...reserva, nroAula: reserva.aulasDisponibles[0].nroAula});
-    setDiasReserva(response.data);
-  };
+    /* response.data.forEach((reserva) => {
+      console.log("dispo", reserva);
+      handleAulaModalOpen(reserva);
+    }); */
 
-  const handleDisponibilidad = () => {
-    const reservaConProblema = diasReserva.find(
-      (reserva) => reserva.disponibilidad === false
-    );
-    if (reservaConProblema) {
-      setSelectedDay(reservaConProblema.fecha);
-      setEsPeriodo(false);
-      //setHorariosDisponibles(reservaConProblema.horariosDisponibles);
-      setDuracionModalOpen(true);
+    if (esPeriodo) {
+      setReservasDiasSemana(response.data);
+    } else {
+      setReservasDia(response.data);
     }
   };
 
   useEffect(() => {
-    console.log(diasReserva);
-    handleDisponibilidad(); // Check for availability issues whenever reservas change
-  }, [diasReserva, handleDisponibilidad]);
+    const reservas = esPeriodo ? reservasDiasSemana : reservasDia;
+    const reservaSinAula = reservas.find(
+      (reserva) => !reserva.nroAula && reserva.aulasDisponibles
+    );
+    if (reservaSinAula) {
+      handleAulaModalOpen(reservaSinAula);
+    }
+  }, [reservasDiasSemana, reservasDia, esPeriodo]);
 
   const handleSearchChange = async (event, value) => {
     try {
@@ -266,35 +333,54 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleSubmitForm = async (e) => {
-e.preventDefault();
-const data = {
-  tipoReserva,
-  cantidadAlumnos,
-  apellidoDocente,
-  nombreDocente,
-  correoDocente,
-  actividadAcademica,
-  realizadaPor: JSON.parse(localStorage.getItem("user")).user,
-  
-}
+    e.preventDefault();
 
-  }
+    const commonData = {
+      tipoReserva,
+      cantidadAlumnos: Number(cantidadAlumnos),
+      apellidoDocente,
+      nombreDocente,
+      correoDocente,
+      actividadAcademica,
+      realizadaPor: "054505e7-fc63-4523-95c2-4856c71d14f4", // JSON.parse(localStorage.getItem("user")).user,
+    };
+
+    let data;
+
+    if (tipoReserva === "POR_PERIODO") {
+      data = {
+        ...commonData,
+        anioCicloLectivo: "2025",
+        periodoReserva,
+        reservasDiasSemana: reservasDiasSemana.map((reserva) => ({
+          ...reserva,
+          fecha: new Date(reserva.fecha).toISOString(), // Format fecha to ISO string
+        })),
+      };
+    } else if (tipoReserva === "ESPORADICA") {
+      data = {
+        ...commonData,
+        reservasDia: reservasDia.map((reserva) => ({
+          ...reserva,
+          fecha: new Date(reserva.fecha).toISOString(), // Format fecha to ISO string
+        })),
+      };
+    }
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/reservas",
+        data
+      );
+      console.log("Reserva creada:", response.data);
+      setSuccess(true);
+    } catch (error) {
+      console.error("Error creando la reserva:", error);
+      setError(true);
+    }
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        handleSubmit(
-          e,
-          {
-            username,
-            nombreDocente,
-            apellidoDocente,
-            tipoReserva,
-          },
-          { setSuccess, setError, setErrorList, setDisabled }
-        );
-      }}
-    >
+    <form onSubmit={handleSubmitForm}>
       <Header />
       <Box
         sx={{
@@ -375,7 +461,7 @@ const data = {
                   <MenuItem value={"POR_PERIODO"}>Por periodo</MenuItem>
                   <MenuItem value={"ESPORADICA"}>Esporadica</MenuItem>
                 </Select>
-                {tipoReserva === "periodo" && (
+                {tipoReserva === "POR_PERIODO" && (
                   <>
                     <Typography
                       color="#5E6366"
@@ -395,12 +481,13 @@ const data = {
                         disableScrollLock: true, // Evita bloquear el desplazamiento del body
                       }}
                     >
-                      <MenuItem value={"cuatrimestre1"}>
+                      <MenuItem value={"PRIMER_CUATRIMESTRE"}>
                         Primer cuatrimestre
                       </MenuItem>
-                      <MenuItem value={"cuatrimestre2"}>
+                      <MenuItem value={"SEGUNDO_CUATRIMESTRE"}>
                         Segundo cuatrimestre
                       </MenuItem>
+                      <MenuItem value={"ANUAL"}>Anual</MenuItem>
                     </Select>
                     <Box
                       sx={{
@@ -422,7 +509,9 @@ const data = {
                       </Typography>
                       <FormGroup>
                         {listaDias.map((dia) => {
-                          const reserva = diasSemana[dia];
+                          const reserva = reservasDiasSemana.find(
+                            (reserva) => reserva.diaSemana === dia.toUpperCase()
+                          );
                           return (
                             <div key={dia}>
                               <FormControlLabel
@@ -453,7 +542,7 @@ const data = {
                     </Box>
                   </>
                 )}
-                {tipoReserva === "esporadica" && (
+                {tipoReserva === "ESPORADICA" && (
                   <>
                     <Typography
                       color="#5E6366"
@@ -465,11 +554,11 @@ const data = {
                       Dias seleccionados
                     </Typography>
                     <List>
-                      {diasReserva.map((reserva, index) => (
+                      {reservasDia.map((reserva, index) => (
                         <ListItem key={index}>
                           <Typography>
-                            {reserva.fecha}: {reserva.horaInicio} hs,{" "}
-                            {reserva.duracion} min
+                            {reserva.fecha.slice(0, 10)} - {reserva.horaInicio}{" "}
+                            hs, {reserva.duracion} min
                           </Typography>
                           <IconButton
                             edge="end"
@@ -487,7 +576,7 @@ const data = {
                           </IconButton>
                         </ListItem>
                       ))}
-                      {diasReserva.length === 0 && (
+                      {reservasDia.length === 0 && (
                         <ListItem>
                           <Typography>No se han seleccionado dias</Typography>
                         </ListItem>
@@ -753,6 +842,14 @@ const data = {
         dia={selectedDay}
         //horariosDisponibles={horariosDisponibles}
       />
+      {currentReservation && (
+        <AulaSelectionModal
+          open={aulaModalOpen}
+          handleClose={handleAulaModalClose}
+          handleAccept={handleAulaAccept}
+          reserva={currentReservation}
+        />
+      )}
     </form>
   );
 };
