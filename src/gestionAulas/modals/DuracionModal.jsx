@@ -11,6 +11,7 @@ import {
   //Select,
   //MenuItem,
 } from "@mui/material";
+import { listaDias } from "../../constants/dias";
 
 const DuracionModal = ({
   open,
@@ -31,11 +32,11 @@ const DuracionModal = ({
   // }, [horariosDisponibles]);
 
   const handleHourChange = (e) => {
-    setHour(e.target.value);
+    setHour(e.target.value + ":00");
   };
 
   const handleDurationChange = (e) => {
-    const value = e.target.value;
+    const value = Number(e.target.value);
     setDuration(value);
   };
 
@@ -53,7 +54,8 @@ const DuracionModal = ({
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ textAlign: "center" }}>
-        Hora y duracion del {dia}
+        Hora y duracion del{" "}
+        {listaDias.includes(dia) ? dia : new Date(dia).toLocaleDateString()}
       </DialogTitle>
       <DialogContent>
         {/* {horariosDisponibles && horariosDisponibles.length > 0 ? (
