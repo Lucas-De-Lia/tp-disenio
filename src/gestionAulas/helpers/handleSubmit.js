@@ -15,7 +15,7 @@ export const handleSubmit = async (e,{username,nombre,apellido,password,repeated
         password,
         repeatedPassword,
         turno,
-        registradoPor: JSON.parse(localStorage.getItem("user")).user,
+        registradoPor: JSON.parse(localStorage.getItem("user")).username,
       };
       console.table(data);
       try {

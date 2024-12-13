@@ -412,9 +412,9 @@ export const RegistrarReservaPage = () => {
       nombreDocente,
       correoDocente,
       actividadAcademica,
-      realizadaPor: "06f3f2b4-0cca-4aca-8a27-67ed25c89845", // JSON.parse(localStorage.getItem("user")).user,
+      realizadaPor: JSON.parse(localStorage.getItem("user")).id
     };
-
+    console.log("commonData", commonData);
     let data;
 
     if (tipoReserva === "POR_PERIODO") {

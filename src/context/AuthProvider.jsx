@@ -46,7 +46,8 @@ export const AuthProvider = ({ children }) => {
                 if(response.data.user.turno !== null){
                     const retUser = {
                         username,
-                        userType:"Bedel"
+                        userType:"Bedel",
+                        id:response.data.user.idUsuario
                     }
                     const action = {
                         type:types.login,
