@@ -16,7 +16,6 @@ import { ReservasPorFechaTable } from "../components/ReservasPorFechaTable";
 import { CancelModal } from "../modals/CancelModal";
 import { ErrorModalGeneral } from "../modals/ErrorModalGeneral";
 import { useNavigate } from "react-router-dom";
-import printCSS from '../components/styles/printReservasPorFechaTable.css'; // Importar el archivo CSS para impresión
 
 export const ReservasPorFechaPage = () => {
   const navigate = useNavigate();
@@ -62,10 +61,6 @@ export const ReservasPorFechaPage = () => {
         <html>
             <head>
             <title>Listado de Reservas para el día ${new Date(fecha).toLocaleDateString()}</title>
-            <link rel="stylesheet" type="text/css" href="styles/print.css">
-            <style>
-                ${printCSS}
-            </style>
             </head>
             <body>
             ${printContent.outerHTML}
