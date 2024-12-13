@@ -56,7 +56,7 @@ export const ReservasPorFechaPage = () => {
         }
         
         const printContent = tableRef.current;
-        const WinPrint = window.open('', '', 'width=900,height=650');
+        const WinPrint = window.open('', '_blank', 'width=900,height=650');
         WinPrint.document.write(`
         <html>
             <head>

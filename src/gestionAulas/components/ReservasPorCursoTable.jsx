@@ -47,7 +47,7 @@ export const ReservasPorCursoTable = ({buscador,print,handlePrint}) => {
           const printContent = generateTables(reservas);
           
           // Crear un contenedor temporal para la impresión
-          const printWindow = window.open("", "_blank");
+          const printWindow = window.open("", "_blank",'width=900,height=650');
           if (printWindow) {
             printWindow.document.write(`
               <html>
@@ -60,7 +60,6 @@ export const ReservasPorCursoTable = ({buscador,print,handlePrint}) => {
             printWindow.document.close();
             printWindow.focus();
             printWindow.print();
-            printWindow.close();
           }
       
           handlePrint(); // Marcar como procesado
