@@ -1,1 +1,1 @@
-export const listaDias = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
+export const listaDias = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"];
