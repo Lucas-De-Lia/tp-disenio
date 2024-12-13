@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import axios from "axios"
 import { ReservasPorCursoTableRows } from './ReservasPorCursoTableRows';
 import { NoReservas } from './NoReservas';
+import { generateTables } from '../helpers';
 
-export const ReservasPorCursoTable = ({buscador}) => {
+export const ReservasPorCursoTable = ({buscador,print,handlePrint}) => {
 
     const [reservas, setReservas] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
@@ -41,6 +42,31 @@ export const ReservasPorCursoTable = ({buscador}) => {
       obtenerReservas();
     }, [buscador]);
     
+    useEffect(() => {
+        if (print) {
+          const printContent = generateTables(reservas);
+          
+          // Crear un contenedor temporal para la impresión
+          const printWindow = window.open("", "_blank");
+          if (printWindow) {
+            printWindow.document.write(`
+              <html>
+                <head>
+                  <title>Imprimir Reservas</title>
+                </head>
+                <body>${printContent}</body>
+              </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+          }
+      
+          handlePrint(); // Marcar como procesado
+        }
+      }, [print]);
+          
 
   return (
     <>

@@ -15,6 +15,8 @@ export const ReservasPorCursoPage = () => {
 
     const [cancelarModal, setCancelarModal] = useState(false);
 
+    const [print, setPrint] = useState(false);
+
 
     const handleBuscador = (e) => {
         setBuscador(e.target.value);
@@ -30,29 +32,8 @@ export const ReservasPorCursoPage = () => {
     }
 
     const handlePrint = () => {
-        const printWindow = window.open("", "_blank"); // Crear una nueva ventana o pestaña
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Impresión de Texto</title>
-              <style>
-                /* Estilos opcionales para el texto */
-                body {
-                  font-family: Arial, sans-serif;
-                  padding: 20px;
-                }
-              </style>
-            </head>
-            <body>
-              <p>${"hola"}</p> <!-- Incluir el texto plano -->
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print(); // Abrir el cuadro de impresión
-        printWindow.close(); // Cerrar la ventana después de imprimir
-      };
-
+        setPrint(!print);
+    }
 
   return (
     <>
@@ -128,7 +109,7 @@ export const ReservasPorCursoPage = () => {
                     />
                     </Box>
                 </Box>
-                <ReservasPorCursoTable buscador={buscador}/>
+                <ReservasPorCursoTable buscador={buscador} print={print} handlePrint={handlePrint}/>
                 <Box
                         display="flex"
                         alignContent = "center"
