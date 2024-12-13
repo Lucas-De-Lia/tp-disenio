@@ -239,9 +239,7 @@ export const RegistrarReservaPage = () => {
   };
 
   const aulasRepetidas = (reservas) => {
-    console.log("reservas2", reservas);
     const aulas = reservas.flatMap((reserva) => reserva.aulasDisponibles || []);
-    console.log("aulas", aulas);
 
     const aulaCount = aulas.reduce((acc, aula) => {
       acc[aula.nroAula] = (acc[aula.nroAula] || 0) + 1;
@@ -254,32 +252,27 @@ export const RegistrarReservaPage = () => {
       .map(([nroAula]) =>
         aulas.find((aula) => aula.nroAula === Number(nroAula))
       );
-
-    console.log("sortedAulas", sortedAulas);
     return sortedAulas;
   };
 
   const filtrarAulas = (reservas) => {
-    console.log("reservas", reservas);
     const updatedReservasDiasSemana = reservasDiasSemana.map((reserva) => {
       const filteredReservas = reservas.filter((r) => {
         const diaSemana = new Date(r.fecha).getDay();
-        console.log(
-          diaSemana,
-          reserva.diaSemana,
-          listaDias.indexOf(reserva.diaSemana)
-        );
         return diaSemana === listaDias.indexOf(reserva.diaSemana);
       });
-      console.log("filteredReservas", filteredReservas);
-      const firstThreeAulas = aulasRepetidas(filteredReservas);
+      const aulasComunes = aulasRepetidas(filteredReservas);
       return {
         ...reserva,
-        aulasDisponibles: firstThreeAulas,
+        ...(reservas[0].aulasDisponibles && {
+          aulasDisponibles: aulasComunes,
+        }),
+        ...(reservas[0].reservasSolapadas && {
+          reservasSolapadas: aulasComunes,
+        }),
       };
     });
 
-    console.log("updated", updatedReservasDiasSemana);
 
     setReservasDiasSemana(updatedReservasDiasSemana);
   };
@@ -301,12 +294,6 @@ export const RegistrarReservaPage = () => {
       removerDiasPeriodo(dia);
     }
   };
-
-  useEffect(() => {
-    console.log(diasReserva);
-    console.log(reservasDiasSemana);
-    console.log(reservasDia);
-  }, [diasReserva, reservasDia, reservasDiasSemana]);
 
   useEffect(() => {
     setDiasReserva([]);
@@ -367,7 +354,6 @@ export const RegistrarReservaPage = () => {
   };
 
   const handleConsulta = async () => {
-    console.log("dias", esPeriodo ? diasReserva : reservasDia);
     const data = {
       tipoAula: tipoAula,
       capacidad: Number(cantidadAlumnos),
@@ -383,13 +369,8 @@ export const RegistrarReservaPage = () => {
       fecha: formatDate(reserva.fecha),
     }));
 
-    console.log("forma", formattedResponse);
-
     if (esPeriodo) {
-      console.log(response.data);
       filtrarAulas(formattedResponse);
-
-      //setReservasDiasSemana(formattedResponse);
     } else {
       setReservasDia(formattedResponse);
     }
