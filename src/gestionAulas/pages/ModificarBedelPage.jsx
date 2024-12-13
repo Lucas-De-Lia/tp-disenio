@@ -60,10 +60,11 @@ export const ModificarBedelPage = () => {
   const handleSubmit = async(e,passwordError,repeatedPasswordError,id,username,nombre,apellido,turno,password,repeatedPassword) => {
     e.preventDefault();
     setDisabled(true);
-    if(!!passwordError || !!repeatedPasswordError || password.length === 0 || repeatedPassword.length === 0){
+    if(!!passwordError || !!repeatedPasswordError){
       setDisabled(false);
       return
     }else{
+      if(password === "" && repeatedPassword === ""){password = null; repeatedPassword = null;}
       const data = {
         idUsuario: id,
         username,
