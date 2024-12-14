@@ -4,7 +4,7 @@ import { Box, Button, Modal, Typography } from "@mui/material"
 
 export const ErrorModal = ({error,handleErrorModal}) => {
   return (
-    <Modal open={error} onClose={() => handleErrorModal(false)}>
+    <Modal open={error} onClose={() => handleErrorModal(false)} disableScrollLock>
                 <Box
                   sx={{
                     position: "absolute",

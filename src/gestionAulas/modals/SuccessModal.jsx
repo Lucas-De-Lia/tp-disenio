@@ -4,7 +4,7 @@ import { Box, Button, Modal, Typography } from "@mui/material"
 export const SuccessModal = ({success,handleClose,handleSuccessExit}) => {
 
   return (
-    <Modal open={success} onClose={handleClose}>
+    <Modal open={success} onClose={handleClose} disableScrollLock>
                 <Box
                   sx={{
                     position: "absolute",

@@ -6,3 +6,4 @@ export * from './ReservasPorCursoPage';
 export * from './BuscarBedelPage';
 export * from './RegistrarBedelPage';
 export * from './RegistrarReservaPage';
+export * from './ModificarBedelPage';

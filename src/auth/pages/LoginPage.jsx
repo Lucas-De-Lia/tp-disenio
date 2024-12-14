@@ -1,6 +1,6 @@
 import { AccountCircleOutlined } from "@mui/icons-material";
-import { Button, Grid, TextField, Typography } from "@mui/material";
-import { useContext } from "react";
+import { Box, Button, Grid, TextField, Typography } from "@mui/material";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../context";
 import { useForm } from "../../hooks/useForm";
 import { useNavigate } from "react-router-dom";
@@ -8,13 +8,17 @@ import { useNavigate } from "react-router-dom";
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
-  const handleLogin = (event) => {
+
+  const [logError, setLogError] = useState(false);
+
+  const handleLogin = async (event) => {
     event.preventDefault();
-    const resp = login(usuario, contrasenia);
+    const resp = await login(usuario, contrasenia);
     if (resp) {
+      setLogError(false);
       navigate('/dashboard');
     } else {
-      return;
+      setLogError(true);
     }
   };
 
@@ -88,6 +92,15 @@ export const LoginPage = () => {
                   onChange={onInputChange}
                 />
               </Grid>
+              <Box>
+                {logError && 
+                (
+                  <Typography variant='body2' sx={{ color: 'red', mt: 1 }}>
+                    Usuario o contraseña incorrectos
+                  </Typography>
+                )
+                }
+              </Box>
               <Grid item sx={{ mb: 2, mt: 2 }}>
                 <Grid item>
                   <Button 
