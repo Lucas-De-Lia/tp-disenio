@@ -13,12 +13,13 @@ import {
   IconButton,
   Autocomplete,
 } from "@mui/material";
-import { Header } from "../../components/Header";
-import { Delete, Edit, ErrorOutline } from "@mui/icons-material";
+import { Delete, Edit } from "@mui/icons-material";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { Header } from "../../components/Header";
 import { useForm } from "../../hooks/useForm";
 import { SuccessModal } from "../modals/SuccessModalReserva";
 import { ErrorModal } from "../modals/ErrorModal";
@@ -27,6 +28,9 @@ import DuracionModal from "../modals/DuracionModal";
 import axios from "axios";
 import { listaDias } from "../../constants/dias";
 import AulaSelectionModal from "./AulasDisponibles";
+import ErrorList from "../components/ErrorList";
+import SelectorDiasEsporadica from "../components/SelectorDiasEsporadica";
+import SelectorDiasPorPeriodo from "../components/SelectorDiasPorPeriodo";
 
 export const RegistrarReservaPage = () => {
   const navigate = useNavigate();
@@ -57,7 +61,7 @@ export const RegistrarReservaPage = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [errorList, setErrorList] = useState(null);
-  const [disabled, setDisabled] = useState(false);
+  const [registrarDisabled, setRegistrarDisabled] = useState(false);
   const [duracionModalOpen, setDuracionModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
   const [esPeriodo, setEsPeriodo] = useState(false);
@@ -98,7 +102,7 @@ export const RegistrarReservaPage = () => {
         setReservasDia([]);
       } else if (tipoReserva === "ESPORADICA") {
         const missing = reservasDia.some((reserva) => !reserva.nroAula);
-        setDisabled(missing);
+        setRegistrarDisabled(missing);
       }
     },
     reservasDia,
@@ -106,6 +110,7 @@ export const RegistrarReservaPage = () => {
     tipoReserva
   );
 
+  // TODO: Pasar a un helper 
   const generarReservasPeriodo = async (day, hour, duration) => {
     const response = await axios.get(
       "http://localhost:8080/api/cuatrimestres/2025"
@@ -344,35 +349,45 @@ export const RegistrarReservaPage = () => {
     setCurrentReservation(null);
   };
 
-  const handleEdit = (dia) => {
+  const handleEditDayEsporadica = (dia) => {
     setSelectedDay(dia);
     setDuracionModalOpen(true);
   };
 
-  const handleDelete = (dia) => {
+  const handleDeleteDayEsporadica = (dia) => {
     setReservasDia((prev) => prev.filter((reserva) => reserva.fecha !== dia));
   };
 
-  const handleConsulta = async () => {
+  const handleConsultaDisponibilidad = async () => {
     const data = {
       tipoAula: tipoAula,
       capacidad: Number(cantidadAlumnos),
       diasReserva: esPeriodo ? diasReserva : reservasDia,
     };
-    const response = await axios.post(
-      "http://localhost:8080/api/aulas/disponibilidad",
-      data
-    );
-
-    const formattedResponse = response.data.map((reserva) => ({
-      ...reserva,
-      fecha: formatDate(reserva.fecha),
-    }));
-
-    if (esPeriodo) {
-      filtrarAulas(formattedResponse);
-    } else {
-      setReservasDia(formattedResponse);
+    
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/aulas/disponibilidad",
+        data
+      );
+      console.log("Disponibilidad Obtenida:", response.data);
+      setError(false);
+      setErrorList(null);
+      
+      const formattedResponse = response.data.map((reserva) => ({
+        ...reserva,
+        fecha: formatDate(reserva.fecha),
+      }));
+  
+      if (esPeriodo) {
+        filtrarAulas(formattedResponse);
+      } else {
+        setReservasDia(formattedResponse);
+      }
+    } catch (error) {
+      console.error("Error al obtener disponibilidad:", error);
+      setErrorList(error.response.data);
+      setError(true);
     }
   };
 
@@ -442,6 +457,7 @@ export const RegistrarReservaPage = () => {
       setSuccess(true);
     } catch (error) {
       console.error("Error creando la reserva:", error);
+      setErrorList(error.response.data);
       setError(true);
     }
   };
@@ -528,157 +544,25 @@ export const RegistrarReservaPage = () => {
                   <MenuItem value={"POR_PERIODO"}>Por periodo</MenuItem>
                   <MenuItem value={"ESPORADICA"}>Esporadica</MenuItem>
                 </Select>
+                
                 {tipoReserva === "POR_PERIODO" && (
-                  <>
-                    <Typography
-                      color="#5E6366"
-                      ml={1}
-                      mt={2}
-                      component="label"
-                      htmlFor="periodoReserva"
-                    >
-                      Periodo de reserva
-                    </Typography>
-                    <Select
-                      name="periodoReserva"
-                      id="periodoReserva"
-                      value={periodoReserva}
-                      onChange={onInputChange}
-                      MenuProps={{
-                        disableScrollLock: true, // Evita bloquear el desplazamiento del body
-                      }}
-                    >
-                      <MenuItem value={"PRIMER_CUATRIMESTRE"}>
-                        Primer cuatrimestre
-                      </MenuItem>
-                      <MenuItem value={"SEGUNDO_CUATRIMESTRE"}>
-                        Segundo cuatrimestre
-                      </MenuItem>
-                      <MenuItem value={"ANUAL"}>Anual</MenuItem>
-                    </Select>
-                    <Box
-                      sx={{
-                        border: "1px solid #E0E0E0", // Light gray border
-                        marginTop: 2,
-                        padding: 2, // Add some padding for better spacing
-                        width: "100%", // Match the width of the Select field
-                        borderRadius: 1, // Optional: Add some border radius for a smoother look
-                      }}
-                    >
-                      <Typography
-                        color="#5E6366"
-                        ml={1}
-                        mt={5}
-                        component="label"
-                        htmlFor="reservasDiasSemana"
-                      >
-                        Seleccionar dias a reservar
-                      </Typography>
-                      <FormGroup>
-                        {listaDias.map((dia) => {
-                          const reserva = reservasDiasSemana.find(
-                            (reserva) => reserva.diaSemana === dia.toUpperCase()
-                          );
-                          return (
-                            <div key={dia}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={!!reserva}
-                                    onChange={(event) =>
-                                      handleCheckboxChange(event, dia)
-                                    }
-                                  />
-                                }
-                                label={mayus(dia)}
-                              />
-                              {reserva && (
-                                <>
-                                  <Typography>
-                                    Horario: {reserva.horaInicio} hs
-                                  </Typography>
-                                  <Typography>
-                                    Duracion: {reserva.duracion} min
-                                  </Typography>
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </FormGroup>
-                    </Box>
-                  </>
+                  <SelectorDiasPorPeriodo
+                    periodoReserva={periodoReserva}
+                    onInputChange={onInputChange}
+                    listaDias={listaDias}
+                    reservasDiasSemana={reservasDiasSemana}
+                    handleCheckboxChange={handleCheckboxChange}
+                    mayus={mayus}
+                  />
                 )}
+
                 {tipoReserva === "ESPORADICA" && (
-                  <>
-                    <Typography
-                      color="#5E6366"
-                      ml={1}
-                      mt={2}
-                      component="label"
-                      htmlFor="periodoReserva"
-                    >
-                      Dias seleccionados
-                    </Typography>
-                    <List>
-                      {reservasDia.map((reserva, index) => (
-                        <ListItem key={index}>
-                          <Typography>
-                            {reserva.fecha.slice(0, 10)} - {reserva.horaInicio}{" "}
-                            hs, {reserva.duracion} min
-                          </Typography>
-                          <IconButton
-                            edge="end"
-                            aria-label="edit"
-                            onClick={() => handleEdit(reserva.fecha)}
-                          >
-                            <Edit />
-                          </IconButton>
-                          <IconButton
-                            edge="end"
-                            aria-label="delete"
-                            onClick={() => handleDelete(reserva.fecha)}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </ListItem>
-                      ))}
-                      {reservasDia.length === 0 && (
-                        <ListItem>
-                          <Typography>No se han seleccionado dias</Typography>
-                        </ListItem>
-                      )}
-                    </List>
-                    <Box
-                      sx={{
-                        border: "1px solid #E0E0E0", // Light gray border
-                        marginTop: 2,
-                        padding: 2, // Add some padding for better spacing
-                        width: "100%", // Match the width of the Select field
-                        borderRadius: 1, // Optional: Add some border radius for a smoother look
-                      }}
-                    >
-                      <Typography
-                        color="#5E6366"
-                        ml={1}
-                        mt={5}
-                        component="label"
-                        htmlFor="diasReserva"
-                      >
-                        Seleccionar dias a reservar
-                      </Typography>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <StaticDatePicker
-                          displayStaticWrapperAs="desktop"
-                          openTo="day"
-                          disablePast={true}
-                          onChange={(date) =>
-                            handleCalendarPick(date.toISOString())
-                          }
-                        />
-                      </LocalizationProvider>
-                    </Box>
-                  </>
+                  <SelectorDiasEsporadica
+                    reservasDia={reservasDia}
+                    handleEdit={handleEditDayEsporadica}
+                    handleDelete={handleDeleteDayEsporadica}
+                    handleCalendarPick={handleCalendarPick}
+                  />
                 )}
 
                 <Typography
@@ -740,7 +624,7 @@ export const RegistrarReservaPage = () => {
                     paddingY: 1.5,
                     borderRadius: 3,
                   }}
-                  onClick={async () => await handleConsulta()}
+                  onClick={async () => await handleConsultaDisponibilidad()}
                 >
                   Consultar disponibilidad
                 </Button>
@@ -816,46 +700,10 @@ export const RegistrarReservaPage = () => {
             </Box>
           </Box>
 
-          {errorList !== null && (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row nowrap",
-                gap: 2,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 5,
-              }}
-            >
-              <ErrorOutline sx={{ color: "#2B2F32", fontSize: 40 }} />
-              <List
-                sx={{
-                  listStyleType: "none",
-                  padding: 1,
-                  bgcolor: "#EDEDED",
-                  borderRadius: 3,
-                  width: "45%",
-                }}
-              >
-                {Object.entries(errorList).map(([field, message], index) => (
-                  <ListItem key={index + field}>
-                    <Typography
-                      sx={{
-                        color: "#2B2F32",
-                        fontSize: 14,
-                        width: "100%",
-                      }}
-                    >
-                      {`${message}`}
-                    </Typography>
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-          )}
+          <ErrorList errorList={errorList} />
           {/*  
-                      BOTONES DE CANCELAR Y REGISTRAR
-                */}
+                BOTONES DE CANCELAR Y REGISTRAR
+          */}
           <Box
             display="flex"
             justifyContent="center"
@@ -883,7 +731,7 @@ export const RegistrarReservaPage = () => {
             <Button
               type="submit"
               variant="contained"
-              disabled={disabled}
+              disabled={registrarDisabled}
               size="medium"
               sx={{
                 width: "200px",
@@ -907,7 +755,7 @@ export const RegistrarReservaPage = () => {
         handleClose={handleModalClose}
         handleAccept={handleModalAccept}
         dia={selectedDay}
-        //horariosDisponibles={horariosDisponibles}
+        // horariosDisponibles={horariosDisponibles}
       />
       {currentReservation && (
         <AulaSelectionModal
