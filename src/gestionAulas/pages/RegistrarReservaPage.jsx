@@ -5,17 +5,8 @@ import {
   Select,
   TextField,
   Typography,
-  List,
-  ListItem,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  IconButton,
   Autocomplete,
 } from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
-import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -87,13 +78,13 @@ export const RegistrarReservaPage = () => {
     onResetForm();
   };
 
-  const handleErrorModal = (state) => {
-    setError(state);
-  };
-
   const handleSuccessExit = () => {
     setSuccess(false);
     navigate("/dashboard");
+  };
+
+  const handleErrorModal = (state) => {
+    setError(state);
   };
 
   useEffect(
@@ -430,7 +421,7 @@ export const RegistrarReservaPage = () => {
       realizadaPor: JSON.parse(localStorage.getItem("user")).id
     };
     console.log("commonData", commonData);
-    let data;
+    let data = {};
 
     if (tipoReserva === "POR_PERIODO") {
       data = {
