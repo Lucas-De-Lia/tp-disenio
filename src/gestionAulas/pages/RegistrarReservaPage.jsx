@@ -1,8 +1,4 @@
-import {
-  Box,
-  Button,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -58,9 +54,11 @@ export const RegistrarReservaPage = () => {
   const [duracionModalOpen, setDuracionModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
   const [esPeriodo, setEsPeriodo] = useState(false);
+  // diasReserva: fechas a reservar para reservas por periodo
   const [diasReserva, setDiasReserva] = useState([]);
   const [options, setOptions] = useState([]);
   const [reservasDiasSemana, setReservasDiasSemana] = useState([]);
+  // reservasDia: fechas a reservar para reservas esporádicas
   const [reservasDia, setReservasDia] = useState([]);
   const [aulaModalOpen, setAulaModalOpen] = useState(false);
   const [currentReservation, setCurrentReservation] = useState();
@@ -85,6 +83,7 @@ export const RegistrarReservaPage = () => {
       if (tipoReserva === "POR_PERIODO") {
         setReservasDia([]);
       } else if (tipoReserva === "ESPORADICA") {
+        // Check if all reservations have an assigned classroom
         const missing = reservasDia.some((reserva) => !reserva.nroAula);
         setRegistrarDisabled(missing);
       }
@@ -113,33 +112,35 @@ export const RegistrarReservaPage = () => {
 
   const handleModalAccept = async (hour, duration) => {
     if (esPeriodo) {
+      // Crear nueva reserva para el día de la semana
       const newReserva = {
         diaSemana: selectedDay.toUpperCase(),
         horaInicio: hour,
         duracion: duration,
       };
+
+      // Actualizar o agregar nueva reserva dia semana según corresponda
       setReservasDiasSemana((prev) => {
         const updatedReservations = [...prev];
         const index = updatedReservations.findIndex(
           (reserva) => reserva.diaSemana === newReserva.diaSemana
         );
 
-        if (index !== -1) {
-          // Update existing reservation
-          updatedReservations[index] = newReserva;
-        } else {
-          // Add new reservation
-          updatedReservations.push(newReserva);
-        }
+        if (index !== -1) updatedReservations[index] = newReserva; 
+        else updatedReservations.push(newReserva);
 
         return updatedReservations;
       });
+
+      // Generar los reservas dia para el periodo
       const generatedDates = await generarReservasPeriodo(
         selectedDay,
         hour,
-        duration
+        duration,
+        periodoReserva
       );
 
+      // Actualizar o agregar nuevos DiasReserva según corresponda
       setDiasReserva((prev) => {
         const updatedDiasReserva = [...prev];
         generatedDates.forEach((newDate) => {
@@ -147,37 +148,29 @@ export const RegistrarReservaPage = () => {
             (reserva) => reserva.fecha === newDate.fecha
           );
 
-          if (index !== -1) {
-            // Update existing date
-            updatedDiasReserva[index] = newDate;
-          } else {
-            // Add new date
-            updatedDiasReserva.push(newDate);
-          }
+          if (index !== -1) updatedDiasReserva[index] = newDate;
+          else updatedDiasReserva.push(newDate);
         });
 
         return updatedDiasReserva;
       });
     } else {
+      // Crear nueva reserva para el día seleccionado (fecha)
       const newReserva = {
         fecha: formatDate(selectedDay),
         horaInicio: hour,
         duracion: duration,
       };
 
+      // Actualizar o agregar nuevo reservaDia según corresponda
       setReservasDia((prev) => {
         const updatedReservations = [...prev];
         const index = updatedReservations.findIndex(
           (reserva) => reserva.fecha === newReserva.fecha
         );
 
-        if (index !== -1) {
-          // Update existing reservation
-          updatedReservations[index] = newReserva;
-        } else {
-          // Add new reservation
-          updatedReservations.push(newReserva);
-        }
+        if (index !== -1) updatedReservations[index] = newReserva;
+        else updatedReservations.push(newReserva);
 
         return updatedReservations;
       });
@@ -266,23 +259,25 @@ export const RegistrarReservaPage = () => {
       capacidad: Number(cantidadAlumnos),
       diasReserva: esPeriodo ? diasReserva : reservasDia,
     };
+    console.log("Data a enviar para obtener disponibilidad:", data);
 
     try {
       const response = await axios.post(
         "http://localhost:8080/api/aulas/disponibilidad",
         data
       );
-      console.log("Disponibilidad Obtenida:", response.data);
       setError(false);
       setErrorList(null);
 
       const formattedResponse = response.data.map((reserva) => ({
         ...reserva,
-        fecha: formatDate(reserva.fecha),
+        fecha: formatDate(reserva.fecha), // Format fecha to ISO string
       }));
+      console.log("Disponibilidad Obtenida (formatted):", formattedResponse);
 
       if (esPeriodo) {
-        filtrarAulas(formattedResponse);
+        console.log("reservasDiasSemana", reservasDiasSemana);
+        filtrarAulas(formattedResponse, reservasDiasSemana);
       } else {
         setReservasDia(formattedResponse);
       }
@@ -293,6 +288,7 @@ export const RegistrarReservaPage = () => {
     }
   };
 
+  // Check if there are reservations without assigned classrooms and open the modal to select one
   useEffect(() => {
     const reservas = esPeriodo ? reservasDiasSemana : reservasDia;
     const reservaSinAula = reservas.find(
@@ -332,6 +328,7 @@ export const RegistrarReservaPage = () => {
       realizadaPor: JSON.parse(localStorage.getItem("user")).id,
     };
     console.log("commonData", commonData);
+
     let data = {};
 
     if (tipoReserva === "POR_PERIODO") {
@@ -350,6 +347,8 @@ export const RegistrarReservaPage = () => {
         })),
       };
     }
+    console.log("Información a enviar para Registrar Reserva:", data);
+
     try {
       const response = await axios.post(
         "http://localhost:8080/api/reservas",
