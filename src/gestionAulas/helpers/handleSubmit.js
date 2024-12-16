@@ -3,7 +3,7 @@ import axios from "axios";
 export const handleSubmit = async (e,{username,nombre,apellido,password,repeatedPassword,turno},{setSuccess,setError,setErrorList,setDisabled},{passwordError,repPasswordError}) => {
     e.preventDefault();
     setDisabled(true);
-    if(!!passwordError || !!repPasswordError){
+    if(!!passwordError || !!repPasswordError || password.length === 0 || repeatedPassword.length === 0){
       setDisabled(false);
       return
     }else{

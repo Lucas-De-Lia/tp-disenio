@@ -43,15 +43,20 @@ export const MainMenuPage = () => {
                 flexDirection: 'row',
                 gap: '50px',
             }}>
-                <MainMenuButton link="/reservas-por-fecha" image={MainMenuButtonImage1} text="Reservas por Fecha" alt="Reservas por Fecha"/>
-                <MainMenuButton link="/reservas-por-curso" image={MainMenuButtonImage1} text="Reservas por Curso" alt="Reservas por Curso"/>
+                {userType === UserTypes.ADMIN ? (<></>) : (
+                <>
+                    <MainMenuButton link="/reservas-por-fecha" image={MainMenuButtonImage1} text="Reservas por Fecha" alt="Reservas por Fecha"/>
+                    <MainMenuButton link="/reservas-por-curso" image={MainMenuButtonImage1} text="Reservas por Curso" alt="Reservas por Curso"/>
+                    <MainMenuButton link="/registrar-reserva" image={MainMenuButtonImage3} text="Registrar Reserva" alt="Registrar Reserva"/>
+                    </>)
+                }
                 {userType ===  UserTypes.ADMIN && (
                     <>
                         <MainMenuButton link="/buscar-bedel" image={MainMenuButtonImage2} text="Buscar Bedel" alt="Buscar Bedel"/>
                         <MainMenuButton link="/registrar-bedel" image={MainMenuButtonImage3} text="Registrar Bedel" alt="Registrar Bedel"/>
                     </>
                 )}
-                <MainMenuButton link="/registrar-reserva" image={MainMenuButtonImage3} text="Registrar Reserva" alt="Registrar Reserva"/>
+                
             </Box>
         </Box>
         </>
