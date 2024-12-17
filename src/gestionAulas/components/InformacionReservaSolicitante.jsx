@@ -4,13 +4,11 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography,
-  Autocomplete,
+  Typography
 } from "@mui/material";
 import SelectorDiasPorPeriodo from "./SelectorDiasPorPeriodo";
 import SelectorDiasEsporadica from "./SelectorDiasEsporadica";
 import PropTypes from "prop-types";
-import { DocentesByName } from "./DocentesByName";
 import { useEffect, useState } from "react";
 import { profesores } from "../helpers/arrayProfesoresEmergencia";
 
@@ -53,6 +51,14 @@ const InformacionReservaSolicitante = ({
         fetchDocentes();
     }, []);
 
+    const handleSelectDocente = (e) => {
+      const selectedNombre = e.target.value;
+      const docenteEncontrado = docentes.find((docente) => docente.nombre === selectedNombre);
+      setDocenteActual(docenteEncontrado);
+      console.log(docenteEncontrado);
+      onInputChange(e);
+    }
+
   return (
     <Box
       sx={{
@@ -68,7 +74,7 @@ const InformacionReservaSolicitante = ({
           flexDirection: "column",
           gap: "1px",
           width: "30%",
-          height: "100%",
+          height: "100%"
         }}
       >
         <Typography
@@ -194,7 +200,7 @@ const InformacionReservaSolicitante = ({
           flexDirection: "column",
           gap: "1px",
           width: "30%",
-          height: "100%",
+          height: "100%", 
         }}
       >
         <Typography
@@ -206,66 +212,120 @@ const InformacionReservaSolicitante = ({
         >
           Informacion del solicitante
         </Typography>
-        
-        <Select
-          name="nombreDocente"
-          id="nombreDocente"
-          value={""}
-          onChange={(e) => {
-            const selectedNombre = e.target.value;
-            const docenteEncontrado = docentes.find(
-              (docente) => docente.nombre === selectedNombre
-            );
-            setDocenteActual(docenteEncontrado || {});
-            onInputChange(e);
-          }}
-          MenuProps={{
-            disableScrollLock: true,
-          }}
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          gap={2}
         >
-          <DocentesByName docentes={docentes}/>
-        </Select>
-        <Select
-          name="apellidoDocente"
-          id="apellidoDocente"
-          value={""}
-          disabled = {!nombreDocente}
-          MenuProps={{
-            disableScrollLock: true,
-          }}
-        >
-          {
-            (docenteActual?.apellido ) && (<MenuItem value={docenteActual.apellido}>{docenteActual.apellido}</MenuItem>)
-          }
-        </Select>
-        <Select
-          name="actividadAcademica"
-          id="actividadAcademica"
-          value={""}
-          disabled = {!nombreDocente}
-          MenuProps={{
-            disableScrollLock: true,
-          }}
-        >
-          {
-            docenteActual?.materias?.map((materia) => (
-                <MenuItem key={materia.id} value = {materia.nombreString}>{materia.nombreString}  </MenuItem>
-              ))
-          }
-        </Select>
-
-
-      
-
-        <TextField
-          name="correoDocente"
-          id="correoDocente"
-          type="text"
-          value={correoDocente}
-          onChange={onInputChange}
-          sx={{ marginTop: 4, marginLeft: 1 }}
-          placeholder="Correo electronico de contacto"
-        />
+          <Box width="100%">
+            <Typography
+              component="label"
+              htmlFor="nombreDocente"
+              color="#5E6366"
+              variant="contained"
+              ml={1}
+            >
+              Nombre docente
+            </Typography>
+            <Select
+              name="nombreDocente"
+              id="nombreDocente"
+              value={nombreDocente}
+              onChange={handleSelectDocente}
+              MenuProps={{
+                disableScrollLock: true,
+              }}
+              fullWidth
+            >
+              {
+                docentes.map((docente) => (
+                    <MenuItem key={docente.id} value = {docente.nombre}>{docente.nombre}  </MenuItem>
+                  ))
+              }
+            </Select>
+          </Box>
+          <Box width="100%">
+            <Typography
+              component="label"
+              htmlFor="nombreDocente"
+              color="#5E6366"
+              variant="contained"
+              ml={1}
+            >
+              Apellido docente
+            </Typography>
+            <Select
+              name="apellidoDocente"
+              id="apellidoDocente"
+              value={apellidoDocente || ""}
+              disabled = {!nombreDocente}
+              MenuProps={{
+                disableScrollLock: true,
+              }}
+              onChange={onInputChange}
+              fullWidth
+            >
+              {
+                (docenteActual?.apellido ) && (<MenuItem value={docenteActual.apellido}>{docenteActual.apellido}</MenuItem>)
+              }
+            </Select>
+          </Box>
+          <Box width="100%">
+            <Typography
+              component="label"
+              htmlFor="nombreDocente"
+              color="#5E6366"
+              variant="contained"
+              ml={1}
+            >
+              Actividad academica
+            </Typography>
+            <Select
+              name="actividadAcademica"
+              id="actividadAcademica"
+              value={actividadAcademica || ""}
+              disabled = {!nombreDocente}
+              MenuProps={{
+                disableScrollLock: true,
+              }}
+              onChange={onInputChange}
+              fullWidth
+            >
+              {
+                docenteActual?.materias?.map((materia) => (
+                    <MenuItem key={materia.nombre} value = {materia.nombre}>{materia.nombre}</MenuItem>
+                  ))
+              }
+            </Select>
+          </Box>
+          <Box width="100%">
+          <Typography
+              component="label"
+              htmlFor="nombreDocente"
+              color="#5E6366"
+              variant="contained"
+              ml={1}
+            >
+              Correo docente
+            </Typography>
+            <Select
+              name="correoDocente"
+              id="correoDocente"
+              value={correoDocente || ""}
+              disabled = {!nombreDocente}
+              MenuProps={{
+                disableScrollLock: true,
+              }}
+              onChange={onInputChange}
+              fullWidth
+            >
+              {
+                (docenteActual?.email ) && (<MenuItem value={docenteActual.email}>{docenteActual.email}</MenuItem>)
+              }
+            </Select>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

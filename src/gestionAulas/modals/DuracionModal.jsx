@@ -17,8 +17,9 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
   const [durationError, setDurationError] = useState(false);
   const [hourError, setHourError] = useState(false);
 
+  //!le quite el + ":00" para que no se bugue la hora en el input, agregar antes de enviar la solicitud
   const handleHourChange = (e) => {
-    setHour(e.target.value + ":00");
+    setHour(e.target.value);
     setHourError(false);
   };
 
