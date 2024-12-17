@@ -20,6 +20,7 @@ import {
   formatDate,
   mayus,
 } from "../helpers";
+import { ContentPasteGoOutlined } from "@mui/icons-material";
 
 export const RegistrarReservaPage = () => {
   const navigate = useNavigate();
@@ -54,13 +55,14 @@ export const RegistrarReservaPage = () => {
   const [duracionModalOpen, setDuracionModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
   const [esPeriodo, setEsPeriodo] = useState(false);
-  // diasReserva: fechas a reservar para reservas por periodo
+  // Fechas a reservar para reservas por periodo
   const [diasReserva, setDiasReserva] = useState([]);
   const [options, setOptions] = useState([]);
   const [reservasDiasSemana, setReservasDiasSemana] = useState([]);
-  // reservasDia: fechas a reservar para reservas esporádicas
+  // Fechas a reservar para reservas esporádicas
   const [reservasDia, setReservasDia] = useState([]);
   const [aulaModalOpen, setAulaModalOpen] = useState(false);
+  // Reserva actual para la que se seleccionará un aula
   const [currentReservation, setCurrentReservation] = useState();
 
   const handleClose = () => {
@@ -78,12 +80,19 @@ export const RegistrarReservaPage = () => {
     setError(state);
   };
 
+  /**
+   * Verificar si todas las reservas tienen un aula asignada.
+   */
   useEffect(
     () => {
       if (tipoReserva === "POR_PERIODO") {
         setReservasDia([]);
+        // Verificar que todas las reservas tengan un aula asignada
+        const missing = reservasDiasSemana.some((reserva) => !reserva.nroAula);
+        setRegistrarDisabled(missing);
       } else if (tipoReserva === "ESPORADICA") {
-        // Check if all reservations have an assigned classroom
+        setReservasDiasSemana([]);
+        // Verificar que todas las reservas tengan un aula asignada
         const missing = reservasDia.some((reserva) => !reserva.nroAula);
         setRegistrarDisabled(missing);
       }
@@ -112,14 +121,14 @@ export const RegistrarReservaPage = () => {
 
   const handleModalAccept = async (hour, duration) => {
     if (esPeriodo) {
-      // Crear nueva reserva para el día de la semana
+      // Crear nueva reserva para el día de la semana seleccionado
       const newReserva = {
         diaSemana: selectedDay.toUpperCase(),
         horaInicio: hour,
         duracion: duration,
       };
 
-      // Actualizar o agregar nueva reserva dia semana según corresponda
+      // Actualizar o agregar nueva reservaDiaSemana según corresponda
       setReservasDiasSemana((prev) => {
         const updatedReservations = [...prev];
         const index = updatedReservations.findIndex(
@@ -131,29 +140,7 @@ export const RegistrarReservaPage = () => {
 
         return updatedReservations;
       });
-
-      // Generar los reservas dia para el periodo
-      const generatedDates = await generarReservasPeriodo(
-        selectedDay,
-        hour,
-        duration,
-        periodoReserva
-      );
-
-      // Actualizar o agregar nuevos DiasReserva según corresponda
-      setDiasReserva((prev) => {
-        const updatedDiasReserva = [...prev];
-        generatedDates.forEach((newDate) => {
-          const index = updatedDiasReserva.findIndex(
-            (reserva) => reserva.fecha === newDate.fecha
-          );
-
-          if (index !== -1) updatedDiasReserva[index] = newDate;
-          else updatedDiasReserva.push(newDate);
-        });
-
-        return updatedDiasReserva;
-      });
+      console.log("reservasDiasSemana:", reservasDiasSemana);
     } else {
       // Crear nueva reserva para el día seleccionado (fecha)
       const newReserva = {
@@ -174,6 +161,7 @@ export const RegistrarReservaPage = () => {
 
         return updatedReservations;
       });
+      console.log("reservasDia:", reservasDia);
     }
   };
 
@@ -206,8 +194,8 @@ export const RegistrarReservaPage = () => {
     handleModalOpen(dia);
   };
 
-  const handleAulaModalOpen = (reservation) => {
-    setCurrentReservation(reservation);
+  const handleAulaModalOpen = (reserva) => {
+    setCurrentReservation(reserva);
     setAulaModalOpen(true);
   };
 
@@ -222,6 +210,7 @@ export const RegistrarReservaPage = () => {
       nroAula: Number(nroAula),
     };
 
+    // Actualizar los datos de la reserva según corresponda
     if (esPeriodo) {
       setReservasDiasSemana((prev) =>
         prev.map((reserva) =>
@@ -269,18 +258,17 @@ export const RegistrarReservaPage = () => {
       setError(false);
       setErrorList(null);
 
+      // Formatear la respuesta en caso de ser necesario
       const formattedResponse = response.data.map((reserva) => ({
         ...reserva,
-        fecha: formatDate(reserva.fecha), // Format fecha to ISO string
+        fecha: esPeriodo ? undefined : formatDate(reserva.fecha),
+        diaSemana: esPeriodo ? reserva.diaSemana : undefined,
       }));
       console.log("Disponibilidad Obtenida (formatted):", formattedResponse);
 
-      if (esPeriodo) {
-        console.log("reservasDiasSemana", reservasDiasSemana);
-        filtrarAulas(formattedResponse, reservasDiasSemana);
-      } else {
-        setReservasDia(formattedResponse);
-      }
+      if(esPeriodo) setReservasDiasSemana(formattedResponse);
+      else setReservasDia(formattedResponse);
+
     } catch (error) {
       console.error("Error al obtener disponibilidad:", error);
       setErrorList(error.response.data);
@@ -288,7 +276,10 @@ export const RegistrarReservaPage = () => {
     }
   };
 
-  // Check if there are reservations without assigned classrooms and open the modal to select one
+  /**
+   * Verificar si hay reservas sin aulas asignadas y abrir el modal 
+   * para seleccionar una en caso de ser necesario.
+   **/
   useEffect(() => {
     const reservas = esPeriodo ? reservasDiasSemana : reservasDia;
     const reservaSinAula = reservas.find(
@@ -334,7 +325,7 @@ export const RegistrarReservaPage = () => {
     if (tipoReserva === "POR_PERIODO") {
       data = {
         ...commonData,
-        anioCicloLectivo: "2025",
+        anioCicloLectivo: "2025",// ! Hardcoded
         periodoReserva,
         reservasDiasSemana,
       };
@@ -480,7 +471,6 @@ export const RegistrarReservaPage = () => {
         handleClose={handleModalClose}
         handleAccept={handleModalAccept}
         dia={selectedDay}
-        // horariosDisponibles={horariosDisponibles}
       />
       {currentReservation && (
         <AulaSelectionModal

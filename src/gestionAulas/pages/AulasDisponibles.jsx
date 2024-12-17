@@ -33,7 +33,9 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
     date.setMinutes(date.getMinutes() + duracion);
     return date.toTimeString().split(" ")[0];
   };
+
   console.log("dispo", reserva);
+  
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle
