@@ -65,6 +65,7 @@ export const RegistrarReservaPage = () => {
   // Reserva actual para la que se seleccionará un aula
   const [currentReservation, setCurrentReservation] = useState();
 
+
   const handleClose = () => {
     setSuccess(false);
     setErrorList(null);
@@ -101,6 +102,7 @@ export const RegistrarReservaPage = () => {
     reservasDiasSemana,
     tipoReserva
   );
+   
 
   const handleModal = (state) => {
     setModal(state);

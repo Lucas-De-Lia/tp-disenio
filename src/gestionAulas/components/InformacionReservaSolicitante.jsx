@@ -10,6 +10,9 @@ import {
 import SelectorDiasPorPeriodo from "./SelectorDiasPorPeriodo";
 import SelectorDiasEsporadica from "./SelectorDiasEsporadica";
 import PropTypes from "prop-types";
+import { DocentesByName } from "./DocentesByName";
+import { useEffect, useState } from "react";
+import { profesores } from "../helpers/arrayProfesoresEmergencia";
 
 const InformacionReservaSolicitante = ({
   tipoReserva,
@@ -33,6 +36,23 @@ const InformacionReservaSolicitante = ({
   apellidoDocente,
   correoDocente,
 }) => {
+
+    const [docentes, setDocentes] = useState([]);
+
+    const [docenteActual, setDocenteActual] = useState({});
+
+    useEffect(() => {
+      const fetchDocentes = async () => {
+        try{
+            const { data } = await axios.get("http://localhost:8080/api/profesores");
+            setDocentes(data);
+        }catch(error){
+            setDocentes(profesores);
+        }
+      }
+        fetchDocentes();
+    }, []);
+
   return (
     <Box
       sx={{
@@ -186,44 +206,56 @@ const InformacionReservaSolicitante = ({
         >
           Informacion del solicitante
         </Typography>
-        <TextField
+        
+        <Select
           name="nombreDocente"
           id="nombreDocente"
-          value={nombreDocente}
-          onChange={onInputChange}
-          placeholder="Nombre"
-          sx={{ marginTop: 6, marginLeft: 1 }}
-        />
-        <TextField
+          value={""}
+          onChange={(e) => {
+            const selectedNombre = e.target.value;
+            const docenteEncontrado = docentes.find(
+              (docente) => docente.nombre === selectedNombre
+            );
+            setDocenteActual(docenteEncontrado || {});
+            onInputChange(e);
+          }}
+          MenuProps={{
+            disableScrollLock: true,
+          }}
+        >
+          <DocentesByName docentes={docentes}/>
+        </Select>
+        <Select
           name="apellidoDocente"
           id="apellidoDocente"
-          sx={{ marginTop: 4, marginLeft: 1 }}
-          value={apellidoDocente}
-          onChange={onInputChange}
-          placeholder="Apellido"
-        />
-
-        <Autocomplete
-          freeSolo
-          options={options.map((option) => option.name)}
-          onInputChange={handleSearchChange}
-          onChange={(event, newValue) => {
-            onInputChange({
-              target: { name: "actividadAcademica", value: newValue },
-            });
+          value={""}
+          disabled = {!nombreDocente}
+          MenuProps={{
+            disableScrollLock: true,
           }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              name="actividadAcademica"
-              id="actividadAcademica"
-              value={actividadAcademica}
-              onChange={onInputChange}
-              placeholder="Buscar"
-              sx={{ marginTop: 4, marginLeft: 1 }}
-            />
-          )}
-        />
+        >
+          {
+            (docenteActual?.apellido ) && (<MenuItem value={docenteActual.apellido}>{docenteActual.apellido}</MenuItem>)
+          }
+        </Select>
+        <Select
+          name="actividadAcademica"
+          id="actividadAcademica"
+          value={""}
+          disabled = {!nombreDocente}
+          MenuProps={{
+            disableScrollLock: true,
+          }}
+        >
+          {
+            docenteActual?.materias?.map((materia) => (
+                <MenuItem key={materia.id} value = {materia.nombreString}>{materia.nombreString}  </MenuItem>
+              ))
+          }
+        </Select>
+
+
+      
 
         <TextField
           name="correoDocente"
