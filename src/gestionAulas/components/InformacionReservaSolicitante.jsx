@@ -200,7 +200,7 @@ const InformacionReservaSolicitante = ({
           flexDirection: "column",
           gap: "1px",
           width: "30%",
-          height: "100%", 
+          height: "100%"
         }}
       >
         <Typography
@@ -215,7 +215,6 @@ const InformacionReservaSolicitante = ({
         <Box
           display="flex"
           flexDirection="column"
-          alignItems="center"
           gap={2}
         >
           <Box width="100%">
