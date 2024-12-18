@@ -14,16 +14,16 @@ import AulaSelectionModal from "./AulasDisponibles";
 import ErrorList from "../components/ErrorList";
 import InformacionReservaSolicitante from "../components/InformacionReservaSolicitante";
 import {
-  generarReservasPeriodo,
   removerDiasPeriodo,
-  filtrarAulas,
   formatDate,
   mayus,
+  sortByDay
 } from "../helpers";
-import { ContentPasteGoOutlined } from "@mui/icons-material";
 
 export const RegistrarReservaPage = () => {
   const navigate = useNavigate();
+
+  const ANIO_CICLO_LECTIVO = 2025;
 
   const {
     nombreDocente,
@@ -55,8 +55,6 @@ export const RegistrarReservaPage = () => {
   const [duracionModalOpen, setDuracionModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
   const [esPeriodo, setEsPeriodo] = useState(false);
-  // Fechas a reservar para reservas por periodo
-  const [diasReserva, setDiasReserva] = useState([]);
   const [options, setOptions] = useState([]);
   const [reservasDiasSemana, setReservasDiasSemana] = useState([]);
   // Fechas a reservar para reservas esporádicas
@@ -86,21 +84,23 @@ export const RegistrarReservaPage = () => {
    */
   useEffect(
     () => {
+      let reservas = [];
       if (tipoReserva === "POR_PERIODO") {
-        setReservasDia([]);
-        // Verificar que todas las reservas tengan un aula asignada
-        const missing = reservasDiasSemana.some((reserva) => !reserva.nroAula);
-        setRegistrarDisabled(missing);
+        if(reservasDia && reservasDia.length > 0){
+          setReservasDia([]);
+        }
+        reservas = reservasDiasSemana;
       } else if (tipoReserva === "ESPORADICA") {
-        setReservasDiasSemana([]);
-        // Verificar que todas las reservas tengan un aula asignada
-        const missing = reservasDia.some((reserva) => !reserva.nroAula);
-        setRegistrarDisabled(missing);
+        if(reservasDiasSemana && reservasDiasSemana.length > 0){
+          setReservasDiasSemana([]);
+        }
+        reservas = reservasDia;
       }
+      // Verificar que todas las reservas tengan un aula asignada
+      const missing = reservas.some((reserva) => !reserva.nroAula || reserva.nroAula === -1);
+      setRegistrarDisabled(missing);
     },
-    reservasDia,
-    reservasDiasSemana,
-    tipoReserva
+    [reservasDia, reservasDiasSemana, tipoReserva]
   );
    
 
@@ -140,7 +140,8 @@ export const RegistrarReservaPage = () => {
         if (index !== -1) updatedReservations[index] = newReserva; 
         else updatedReservations.push(newReserva);
 
-        return updatedReservations;
+        // Ordenar las reservas por día de la semana
+        return sortByDay(updatedReservations, esPeriodo);
       });
       console.log("reservasDiasSemana:", reservasDiasSemana);
     } else {
@@ -161,7 +162,8 @@ export const RegistrarReservaPage = () => {
         if (index !== -1) updatedReservations[index] = newReserva;
         else updatedReservations.push(newReserva);
 
-        return updatedReservations;
+        // Ordenar las reservas por fecha
+        return sortByDay(updatedReservations, esPeriodo);
       });
       console.log("reservasDia:", reservasDia);
     }
@@ -186,7 +188,6 @@ export const RegistrarReservaPage = () => {
   };
 
   useEffect(() => {
-    setDiasReserva([]);
     setReservasDia([]);
     setReservasDiasSemana([]);
   }, [periodoReserva, tipoReserva]);
@@ -203,10 +204,18 @@ export const RegistrarReservaPage = () => {
 
   const handleAulaModalClose = () => {
     setAulaModalOpen(false);
+    currentReservation.nroAula = undefined;
     setCurrentReservation(null);
   };
 
   const handleAulaAccept = (nroAula) => {
+    if(!nroAula && currentReservation.reservasSolapadas){
+      nroAula = -1;
+      console.log("no hay aulas disponibles, seleccionada: ", nroAula);
+    }else{
+      console.log("hay aulas disponibles, seleccionada: ", nroAula);
+    }
+
     const updatedReservation = {
       ...currentReservation,
       nroAula: Number(nroAula),
@@ -246,16 +255,30 @@ export const RegistrarReservaPage = () => {
 
   const handleConsultaDisponibilidad = async () => {
     const data = {
+      tipoReserva: tipoReserva,
+      periodoReserva: esPeriodo ? periodoReserva : undefined,
+      anioCicloLectivo: esPeriodo ? ANIO_CICLO_LECTIVO : undefined,
       tipoAula: tipoAula,
       capacidad: Number(cantidadAlumnos),
-      diasReserva: esPeriodo ? diasReserva : reservasDia,
+      diasReserva: esPeriodo ? reservasDiasSemana : reservasDia,
     };
-    console.log("Data a enviar para obtener disponibilidad:", data);
 
+    const formattedData = {
+      ...data,
+      diasReserva: data.diasReserva.map((reserva) => ({
+        ...reserva,
+        horaInicio: reserva.horaInicio + ":00", // Add seconds
+      }))
+    };
+    
+    console.log("Data a enviar para obtener disponibilidad:", formattedData);
+    console.log("reservas dia", reservasDia);
+    console.log("reservas dia semana", reservasDiasSemana);
+    
     try {
       const response = await axios.post(
         "http://localhost:8080/api/aulas/disponibilidad",
-        data
+        formattedData
       );
       setError(false);
       setErrorList(null);
@@ -265,11 +288,25 @@ export const RegistrarReservaPage = () => {
         ...reserva,
         fecha: esPeriodo ? undefined : formatDate(reserva.fecha),
         diaSemana: esPeriodo ? reserva.diaSemana : undefined,
+        horaInicio: reserva.horaInicio.slice(0, 5), // Remove seconds
       }));
       console.log("Disponibilidad Obtenida (formatted):", formattedResponse);
 
-      if(esPeriodo) setReservasDiasSemana(formattedResponse);
-      else setReservasDia(formattedResponse);
+      sortByDay(formattedResponse, esPeriodo);
+
+      if(esPeriodo){
+        // TODO: Hacer que no se sobreescriba el nroAula para que no se pierda la selección
+        // setReservasDiasSemana((prev) => {
+        //   const updatedReservations = prev.map((reserva) => {
+        //     const newReserva = formattedResponse.find(
+        //       (newRes) => newRes.diaSemana === reserva.diaSemana
+        //     );
+        //     return newReserva ? { ...reserva, ...newReserva } : reserva;
+        //   });
+        //   return updatedReservations;
+        // });
+        setReservasDiasSemana(formattedResponse);
+      }else setReservasDia(formattedResponse); // TODO: COPIAR ACA
 
     } catch (error) {
       console.error("Error al obtener disponibilidad:", error);
@@ -284,15 +321,25 @@ export const RegistrarReservaPage = () => {
    **/
   useEffect(() => {
     const reservas = esPeriodo ? reservasDiasSemana : reservasDia;
-    const reservaSinAula = reservas.find(
+    
+    const reservasSinAula = reservas.filter(
       (reserva) =>
-        !reserva.nroAula &&
+        // mostrar todas temporalmente
+        (!reserva.nroAula || reserva.nroAula === -1) &&
         (reserva.aulasDisponibles || reserva.reservasSolapadas)
     );
-    if (reservaSinAula) {
-      handleAulaModalOpen(reservaSinAula);
+    console.log("Sin aulas:", reservasSinAula);
+    
+    if (reservasSinAula) {
+      reservasSinAula.reverse();
+      reservasSinAula.forEach((reserva) => {
+        // if((reserva.aulasDisponibles && !reserva.nroAula) || (reserva.reservasSolapadas && reserva.nroAula !== -1)){
+        if(reserva.aulasDisponibles || (reserva.reservasSolapadas && reserva.nroAula !== -1)){
+          handleAulaModalOpen(reserva);
+        }
+      });
     }
-  }, [reservasDiasSemana, reservasDia, esPeriodo]);
+  }, [reservasDia, reservasDiasSemana, esPeriodo]);
 
   const handleSearchChange = async (event, value) => {
     try {
@@ -320,16 +367,18 @@ export const RegistrarReservaPage = () => {
       actividadAcademica,
       realizadaPor: JSON.parse(localStorage.getItem("user")).id,
     };
-    console.log("commonData", commonData);
 
     let data = {};
 
     if (tipoReserva === "POR_PERIODO") {
       data = {
         ...commonData,
-        anioCicloLectivo: "2025",// ! Hardcoded
+        anioCicloLectivo: ANIO_CICLO_LECTIVO,
         periodoReserva,
-        reservasDiasSemana,
+        reservasDiasSemana: reservasDiasSemana.map((reserva) => ({
+          ...reserva,
+          horaInicio: reserva.horaInicio + ":00", // Add seconds
+        })),
       };
     } else if (tipoReserva === "ESPORADICA") {
       data = {
@@ -337,6 +386,7 @@ export const RegistrarReservaPage = () => {
         reservasDia: reservasDia.map((reserva) => ({
           ...reserva,
           fecha: formatDate(reserva.fecha), // Format fecha to ISO string
+          horaInicio: reserva.horaInicio + ":00", // Add seconds
         })),
       };
     }
@@ -465,6 +515,16 @@ export const RegistrarReservaPage = () => {
             />
             <ErrorModal error={error} handleErrorModal={handleErrorModal} />
           </Box>
+          {registrarDisabled && (
+            <Typography
+              variant="body1"
+              color="error"
+              textAlign="center"
+              sx={{ mt: 2 , fontSize: 16}}
+            >
+              Elija un aula para cada día antes de registrar.
+            </Typography>
+          )}
         </Box>
       </Box>
 
