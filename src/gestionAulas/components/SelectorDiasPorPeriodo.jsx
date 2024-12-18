@@ -28,11 +28,11 @@ const SelectorDiasPorPeriodo = ({ periodoReserva, onInputChange, listaDias, rese
       </Select>
       <Box
         sx={{
-          border: "1px solid #E0E0E0", // Light gray border
+          border: "1px solid #E0E0E0",
           marginTop: 2,
-          padding: 2, // Add some padding for better spacing
-          width: "100%", // Match the width of the Select field
-          borderRadius: 1, // Optional: Add some border radius for a smoother look
+          padding: 2,
+          width: "100%",
+          borderRadius: 1,
         }}
       >
         <Typography
@@ -64,6 +64,18 @@ const SelectorDiasPorPeriodo = ({ periodoReserva, onInputChange, listaDias, rese
                   <>
                     <Typography>Horario: {reserva.horaInicio} hs</Typography>
                     <Typography>Duracion: {reserva.duracion} min</Typography>
+                    {reserva.nroAula && reserva.nroAula !== -1 
+                      ? (
+                        <>
+                          <Typography>Aula: {reserva.nroAula}</Typography>
+                        </>
+                      ) 
+                      : (
+                        <>
+                          <Typography>Sin aula seleccionada</Typography>
+                        </>
+                      )
+                    }
                   </>
                 )}
               </div>

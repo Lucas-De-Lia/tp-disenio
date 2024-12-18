@@ -18,6 +18,7 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
   const [selectedAula, setSelectedAula] = useState("");
 
   const handleAulaChange = (event) => {
+    if(reserva.reservasSolapadas) return;
     setSelectedAula(event.target.value);
   };
 
@@ -26,16 +27,19 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
     handleClose();
   };
 
-  const calculateHoraFin = (horaInicio, duracion) => {
-    const [hours, minutes, seconds] = horaInicio.split(":").map(Number);
-    const date = new Date();
-    date.setHours(hours, minutes, seconds);
-    date.setMinutes(date.getMinutes() + duracion);
-    return date.toTimeString().split(" ")[0];
+  const handleCancelClick = () => {
+    handleClose();
   };
 
-  console.log("dispo", reserva);
-  
+  const calculateHoraFin = (horaInicio, duracion) => {
+    const [hours, minutes] = horaInicio.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes);
+    date.setMinutes(date.getMinutes() + duracion);
+    const dateStr = date.toTimeString().split(" ")[0];
+    return dateStr.slice(0, 5); // HH:MM
+  };
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle
@@ -61,8 +65,8 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
               sx={{ marginBottom: "5px", color: "red" }}
               textAlign={"center"}
             >
-              ADVERTENCIA: No existen aulas que cumplan con el criterio
-              ingresado
+              ADVERTENCIA: No existen aulas que cumplan con los criterios
+              ingresados
             </Typography>
           )}
           {reserva.reservasSolapadas && (
@@ -71,9 +75,9 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
             </Typography>
           )}
           {reserva.aulasDisponibles &&
-            reserva.aulasDisponibles.map((aula) => (
+            reserva.aulasDisponibles.map((aula, index) => (
               <FormControlLabel
-                key={aula.nroAula}
+                key={`${aula.nroAula}-${index}`}
                 value={aula.nroAula}
                 control={<Radio sx={{ color: "#1976d2" }} />}
                 label={
@@ -118,11 +122,11 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
               />
             ))}
           {reserva.reservasSolapadas &&
-            reserva.reservasSolapadas.map((resSolapada) => (
+            reserva.reservasSolapadas.map((resSolapada, index) => (
               <FormControlLabel
-                key={resSolapada.aula.nroAula}
+                key={`${resSolapada.aula.nroAula}-${index}`}
                 value={resSolapada.aula.nroAula}
-                control={<Radio sx={{ color: "#1976d2" }} />}
+                control={<Radio sx={{ color: "#1976d2", display: reserva.reservasSolapadas ? "none": "block", }}/>}
                 label={
                   <div style={{ marginLeft: "8px" }}>
                     <Typography variant="body2" sx={{ marginBottom: "2px" }}>
@@ -184,6 +188,23 @@ const AulaSelectionModal = ({ open, handleClose, handleAccept, reserva }) => {
         </RadioGroup>
       </DialogContent>
       <DialogActions sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+      <Button
+          type="button"
+          variant="outlined"
+          size="medium"
+          sx={{
+            width: "180px",
+            backgroundColor: "white",
+            color: "#32936F",
+            borderColor: "#32936F", 
+            borderRadius: 3,
+            paddingY: 1,
+            marginBottom: 1,
+          }}
+          onClick={handleClose} // TODO: cambiar a un handlerCancel
+        >
+          Cancelar
+        </Button>
         <Button
           type="submit"
           variant="contained"
@@ -214,6 +235,7 @@ AulaSelectionModal.propTypes = {
     horaInicio: PropTypes.string,
     duracion: PropTypes.number,
     disponible: PropTypes.bool,
+    nroAula: PropTypes.number,
     aulasDisponibles: PropTypes.arrayOf(
       PropTypes.shape({
         nroAula: PropTypes.number,

@@ -133,3 +133,10 @@ export const filtrarAulas = (reservasDia, reservasDiasSemana) => {
         };
     });
 };
+
+export const sortByDay = (reservas, esPeriodo) => {
+    if(esPeriodo){
+        return reservas.sort((a, b) => listaDias.indexOf(a.diaSemana) - listaDias.indexOf(b.diaSemana));
+    }
+    return reservas.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+};

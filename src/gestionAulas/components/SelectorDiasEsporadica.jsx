@@ -17,11 +17,18 @@ const SelectorDiasEsporadica = ({ reservasDia, handleEdit, handleDelete, handleC
       >
         Dias seleccionados
       </Typography>
-      <List>
+      <List
+       sx={{
+        border: "1px solid #E0E0E0",
+        padding: "5px",
+        width: "100%",
+        borderRadius: 1,
+      }}
+      >
         {reservasDia.map((reserva, index) => (
           <ListItem key={index}>
             <Typography>
-              {reserva.fecha.slice(0, 10)} - {reserva.horaInicio} hs, {reserva.duracion} min
+              {reserva.fecha.slice(0, 10)} - {reserva.horaInicio} hs, {reserva.duracion} min, {(reserva.nroAula && reserva.nroAula !== -1) ? `Aula: ${reserva.nroAula}` : "Sin aula"}
             </Typography>
             <IconButton
               edge="end"
@@ -47,11 +54,11 @@ const SelectorDiasEsporadica = ({ reservasDia, handleEdit, handleDelete, handleC
       </List>
       <Box
         sx={{
-          border: "1px solid #E0E0E0", // Light gray border
+          border: "1px solid #E0E0E0",
           marginTop: 2,
-          padding: 2, // Add some padding for better spacing
-          width: "100%", // Match the width of the Select field
-          borderRadius: 1, // Optional: Add some border radius for a smoother look
+          padding: 2,
+          width: "100%",
+          borderRadius: 1,
         }}
       >
         <Typography

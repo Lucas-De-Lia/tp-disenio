@@ -27,9 +27,7 @@ const InformacionReservaSolicitante = ({
   handleConsultaDisponibilidad,
   tipoAula,
   cantidadAlumnos,
-  options,
   actividadAcademica,
-  handleSearchChange,
   nombreDocente,
   apellidoDocente,
   correoDocente,
@@ -42,10 +40,11 @@ const InformacionReservaSolicitante = ({
     useEffect(() => {
       const fetchDocentes = async () => {
         try{
-            const { data } = await axios.get("http://localhost:8080/api/profesores");
-            setDocentes(data);
+          const { data } = await axios.get("http://localhost:8080/api/profesores");
+          setDocentes(data);
         }catch(error){
-            setDocentes(profesores);
+          console.error("Error al obtener los docentes", error);
+          setDocentes(profesores);
         }
       }
         fetchDocentes();
