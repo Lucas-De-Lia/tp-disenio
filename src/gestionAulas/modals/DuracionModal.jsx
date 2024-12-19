@@ -17,14 +17,14 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
   const [durationError, setDurationError] = useState(false);
   const [hourError, setHourError] = useState(false);
 
-  //!le quite el + ":00" para que no se bugue la hora en el input, agregar antes de enviar la solicitud
   const handleHourChange = (e) => {
     setHour(e.target.value);
     setHourError(false);
   };
 
   const handleDurationChange = (e) => {
-    const value = Number(e.target.value);
+    const recortado = e.target.value.slice(0, 3);
+    const value = Number(recortado);
     setDuration(value);
   };
 
@@ -73,7 +73,7 @@ const DuracionModal = ({ open, handleClose, handleAccept, dia }) => {
       </DialogContent>
       <DialogActions sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
         <Button
-          variant="outlined"
+          variant="outl</DialogActions>ined"
           size="medium"
           sx={{
             width: "180px",

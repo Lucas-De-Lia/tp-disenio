@@ -145,7 +145,7 @@ const InformacionReservaSolicitante = ({
               target: {
                 // Con parámetro explícito para poder transformar a Number
                 name: "cantidadAlumnos",
-                value: Number(e.target.value),
+                value: Number(e.target.value.slice(0, 4)),
               },
             })
           }
