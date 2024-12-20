@@ -8,6 +8,7 @@ import { CancelModal } from "../modals/CancelModal";
 import { passwordAnalizer } from "../helpers";
 import axios from "axios";
 import { ModificarSuccess } from "../modals/ModificarSuccess";
+import ErrorList from "../components/ErrorList";
 
 
 export const ModificarBedelPage = () => {
@@ -378,44 +379,7 @@ export const ModificarBedelPage = () => {
                 }
             </Box>
           </Box>
-          {errorList !== null && (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row nowrap",
-                  gap: 2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width:"80%"
-                }}
-              >
-                <ErrorOutline sx={{ color: "#2B2F32", fontSize: 40 }} />
-                <List
-                  sx={{
-                    listStyleType: "none",
-                    padding: 1,
-                    bgcolor: "#EDEDED",
-                    borderRadius: 3,
-                    width: "45%",
-                  }}
-                >
-                  {Object.entries(errorList).map(([field, message], index) => (
-                    <ListItem key={index + field}>
-                      <Typography
-                        sx={{
-                          color: "#2B2F32",
-                          fontSize: 14,
-                          width: "100%",
-                          textAlign: "center"
-                        }}
-                      >
-                        {`${message}`}
-                      </Typography>
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            )}
+          {errorList !== null && (<ErrorList errorList={errorList}/>)}
           <Box
             display="flex"
             alignItems="center"
